@@ -1,0 +1,21 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_USE_MOCK_AUTH": "false"
+  },
+  "regions": ["iad1"],
+  "rewrites": [
+    {
+      "source": "/admin/:path*",
+      "destination": "/api/admin/:path*"
+    }
+  ]
+}

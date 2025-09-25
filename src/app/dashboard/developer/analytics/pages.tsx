@@ -1,0 +1,483 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { 
+  BarChart, 
+  LineChart, 
+  PieChart, 
+  ArrowUpRight, 
+  Users, 
+  DollarSign, 
+  Star, 
+  TrendingUp,
+  Download,
+  Calendar,
+  Filter,
+  ArrowRight,
+  Loader2
+} from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  BarChart as RechartsBarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell
+} from 'recharts';
+
+// Mock data for the dashboard
+const mockOverviewData = {
+  totalUsers: 12580,
+  totalRevenue: 48750.25,
+  averageRating: 4.7,
+  conversionRate: 3.2,
+  activeUsers: 8420
+};
+
+const mockDailyVisitors = [
+  { date: '2025-02-26', visitors: 420 },
+  { date: '2025-02-27', visitors: 380 },
+  { date: '2025-02-28', visitors: 450 },
+  { date: '2025-03-01', visitors: 520 },
+  { date: '2025-03-02', visitors: 480 },
+  { date: '2025-03-03', visitors: 510 },
+  { date: '2025-03-04', visitors: 530 }
+];
+
+const mockAppPerformance = [
+  { name: 'App 1', users: 5200, revenue: 21000, rating: 4.8 },
+  { name: 'App 2', users: 3800, revenue: 15500, rating: 4.6 },
+  { name: 'App 3', users: 2100, revenue: 8200, rating: 4.5 },
+  { name: 'App 4', users: 1480, revenue: 4050, rating: 4.9 }
+];
+
+const mockPlatformData = [
+  { name: 'iOS', value: 58 },
+  { name: 'Android', value: 42 }
+];
+
+const mockRegionData = [
+  { name: 'North America', value: 45 },
+  { name: 'Europe', value: 30 },
+  { name: 'Asia', value: 15 },
+  { name: 'Other', value: 10 }
+];
+
+const mockMonthlyRevenue = [
+  { month: 'Jan', revenue: 4200 },
+  { month: 'Feb', revenue: 4800 },
+  { month: 'Mar', revenue: 5100 },
+  { month: 'Apr', revenue: 4900 },
+  { month: 'May', revenue: 5300 },
+  { month: 'Jun', revenue: 5800 },
+  { month: 'Jul', revenue: 6200 },
+  { month: 'Aug', revenue: 6100 },
+  { month: 'Sep', revenue: 6500 },
+  { month: 'Oct', revenue: 6800 },
+  { month: 'Nov', revenue: 7200 },
+  { month: 'Dec', revenue: 7800 }
+];
+
+// Colors for charts
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
+export default function DeveloperAnalyticsDashboard() {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  const [timeRange, setTimeRange] = useState('30days');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Redirect if not authenticated or not a developer
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/signin');
+    } else if (!authLoading && isAuthenticated && user?.role !== 'developer') {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+  
+  // Simulate data loading
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, authLoading]);
+  
+  const handleTimeRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTimeRange(e.target.value);
+  };
+  
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+  
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex">
+        <div className="flex-1 p-8">
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <span className="ml-2 text-lg">Loading analytics data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <div className="flex-1 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+              <p className="text-gray-600 mt-1">
+                Comprehensive analytics for all your apps
+              </p>
+            </div>
+            
+            <div className="mt-4 md:mt-0 flex items-center space-x-4">
+              <div className="flex items-center">
+                <Calendar className="h-5 w-5 text-gray-400 mr-2" />
+                <select
+                  value={timeRange}
+                  onChange={handleTimeRangeChange}
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="7days">Last 7 days</option>
+                  <option value="30days">Last 30 days</option>
+                  <option value="90days">Last 90 days</option>
+                  <option value="1year">Last year</option>
+                </select>
+              </div>
+              
+              <button
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+              </button>
+            </div>
+          </div>
+          
+          {/* Overview metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Total Users</p>
+                  <h3 className="text-2xl font-bold">{mockOverviewData.totalUsers.toLocaleString()}</h3>
+                </div>
+                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>12% increase</span>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Total Revenue</p>
+                  <h3 className="text-2xl font-bold">{formatCurrency(mockOverviewData.totalRevenue)}</h3>
+                </div>
+                <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-green-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>8.5% increase</span>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Average Rating</p>
+                  <h3 className="text-2xl font-bold">{mockOverviewData.averageRating}</h3>
+                </div>
+                <div className="h-12 w-12 bg-yellow-50 rounded-full flex items-center justify-center">
+                  <Star className="h-6 w-6 text-yellow-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>0.2 increase</span>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Conversion Rate</p>
+                  <h3 className="text-2xl font-bold">{mockOverviewData.conversionRate}%</h3>
+                </div>
+                <div className="h-12 w-12 bg-purple-50 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-purple-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>0.5% increase</span>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Active Users</p>
+                  <h3 className="text-2xl font-bold">{mockOverviewData.activeUsers.toLocaleString()}</h3>
+                </div>
+                <div className="h-12 w-12 bg-red-50 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-red-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm text-green-600">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                <span>5% increase</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Charts section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Daily Visitors Chart */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Daily Visitors</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={mockDailyVisitors}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <Tooltip 
+                      formatter={(value: any) => [`${value} visitors`, 'Visitors']}
+                      labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="visitors" 
+                      stroke="#8884d8" 
+                      fillOpacity={1} 
+                      fill="url(#colorVisitors)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* Monthly Revenue Chart */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Monthly Revenue</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart
+                    data={mockMonthlyRevenue}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value: any) => [`$${value}`, 'Revenue']}
+                    />
+                    <Legend />
+                    <Bar dataKey="revenue" fill="#4f46e5" name="Revenue" />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* Platform Distribution */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Platform Distribution</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={mockPlatformData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {mockPlatformData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: any) => [`${value}%`, 'Percentage']} />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* Regional Distribution */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">Regional Distribution</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={mockRegionData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {mockRegionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: any) => [`${value}%`, 'Percentage']} />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+          
+          {/* App Performance Table */}
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">App Performance</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      App Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Users
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Revenue
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rating
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {mockAppPerformance.map((app, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{app.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{app.users.toLocaleString()}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{formatCurrency(app.revenue)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
+                          <span className="text-sm text-gray-500">{app.rating}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link href={`/dashboard/developer/apps/${index + 1}/analytics`} className="text-indigo-600 hover:text-indigo-900">
+                          View Details <ArrowRight className="h-4 w-4 inline ml-1" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link
+              href="/dashboard/developer/sales"
+              className="bg-white rounded-lg shadow-sm p-6 hover:shadow transition-shadow"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">Sales Dashboard</h3>
+                  <p className="text-sm text-gray-500">Detailed sales and revenue analytics</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400" />
+              </div>
+            </Link>
+            
+            <Link
+              href="/dashboard/developer/feedback/analytics"
+              className="bg-white rounded-lg shadow-sm p-6 hover:shadow transition-shadow"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">Feedback Analytics</h3>
+                  <p className="text-sm text-gray-500">Analyze user feedback and ratings</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400" />
+              </div>
+            </Link>
+            
+            <Link
+              href="/dashboard/developer/apps"
+              className="bg-white rounded-lg shadow-sm p-6 hover:shadow transition-shadow"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">App Management</h3>
+                  <p className="text-sm text-gray-500">Manage your apps and settings</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400" />
+              </div>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
