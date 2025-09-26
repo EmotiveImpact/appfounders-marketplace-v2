@@ -103,7 +103,7 @@ export default function BlogDetailPage() {
             if (node.type === 'ul') {
               return (
                 <ul key={index}>
-                  {node.children.map((li, liIndex) => (
+                  {node.children.map((li: any, liIndex) => (
                     <li key={liIndex}>{li.children.map((child: any) => child.text).join('')}</li>
                   ))}
                 </ul>
@@ -113,7 +113,7 @@ export default function BlogDetailPage() {
             if (node.type === 'ol') {
               return (
                 <ol key={index}>
-                  {node.children.map((li, liIndex) => (
+                  {node.children.map((li: any, liIndex) => (
                     <li key={liIndex}>{li.children.map((child: any) => child.text).join('')}</li>
                   ))}
                 </ol>
