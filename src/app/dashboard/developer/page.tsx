@@ -295,7 +295,7 @@ export default function DeveloperDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {recentSales.map((sale) => (
+                      {recentSales.map((sale: any) => (
                         <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                           <td className="px-4 py-3">
                             <div className="flex items-center">
