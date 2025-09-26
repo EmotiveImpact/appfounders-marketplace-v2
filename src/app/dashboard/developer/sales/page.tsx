@@ -10,6 +10,22 @@ interface UserWithRole {
   image?: string | null;
   role?: string;
 }
+
+interface Sale {
+  id: number;
+  customer: string;
+  app: string;
+  amount: number;
+  date: string;
+}
+
+interface SalesData {
+  totalRevenue: number;
+  totalSales: number;
+  totalCustomers: number;
+  growthRate: number;
+  recentSales: Sale[];
+}
 import { 
   BarChart,
   Bar,
@@ -75,7 +91,7 @@ export default function SalesDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('year');
-  const [salesData, setSalesData] = useState({
+  const [salesData, setSalesData] = useState<SalesData>({
     totalRevenue: 0,
     totalSales: 0,
     totalCustomers: 0,
