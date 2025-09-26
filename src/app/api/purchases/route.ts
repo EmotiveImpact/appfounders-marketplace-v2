@@ -91,15 +91,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Verify user is authenticated and is a tester
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     if (session.user.role !== 'tester' && session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Only testers can make purchases' },
