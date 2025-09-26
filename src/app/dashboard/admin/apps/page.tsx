@@ -149,10 +149,11 @@ export default function AdminAppsPage() {
   };
 
   const handleApprove = () => {
+    if (!selectedApp) return;
     // In a real app, this would be an API call
-    setApps(apps.map((app: any) => 
-      app.id === selectedApp.id 
-        ? { ...app, status: 'approved', updatedAt: new Date().toISOString() } 
+    setApps(apps.map((app: App) =>
+      app.id === selectedApp.id
+        ? { ...app, status: 'approved', updatedAt: new Date().toISOString() }
         : app
     ));
     setShowApprovalModal(false);
@@ -160,24 +161,24 @@ export default function AdminAppsPage() {
   };
 
   // Handle app rejection
-  const openRejectModal = (app: any) => {
+  const openRejectModal = (app: App) => {
     setSelectedApp(app);
     setRejectionReason('');
     setShowRejectModal(true);
   };
 
   const handleReject = () => {
-    if (!rejectionReason.trim()) return;
-    
+    if (!rejectionReason.trim() || !selectedApp) return;
+
     // In a real app, this would be an API call
-    setApps(apps.map((app: any) => 
-      app.id === selectedApp.id 
-        ? { 
-            ...app, 
-            status: 'rejected', 
+    setApps(apps.map((app: App) =>
+      app.id === selectedApp.id
+        ? {
+            ...app,
+            status: 'rejected',
             updatedAt: new Date().toISOString(),
             rejectionReason
-          } 
+          }
         : app
     ));
     setShowRejectModal(false);
