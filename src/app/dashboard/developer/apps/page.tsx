@@ -10,6 +10,14 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+interface UserWithRole {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+  id?: string;
+}
+
 // Define App type
 type App = {
   id: string;
@@ -39,8 +47,9 @@ export default function DeveloperAppsPage() {
         setError(null);
         
         // Get developer ID from session
-        const developerId = session?.user?.id;
-        const developerEmail = session?.user?.email;
+        const userWithRole = session?.user as UserWithRole;
+        const developerId = userWithRole?.id;
+        const developerEmail = userWithRole?.email;
         console.log('Developer ID:', developerId);
         console.log('Developer Email:', developerEmail);
         
