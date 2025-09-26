@@ -31,8 +31,8 @@ export default function CreateBlogPage() {
   const [previewMode, setPreviewMode] = useState(false);
 
   const validateForm = () => {
-    const newErrors = {};
-    
+    const newErrors: any = {};
+
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (!formData.excerpt.trim()) newErrors.excerpt = 'Excerpt is required';
     if (!formData.content.trim()) newErrors.content = 'Content is required';
