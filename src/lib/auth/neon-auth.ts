@@ -13,7 +13,7 @@ export interface User {
 
 export interface CreateUserData {
   email: string;
-  password: string;
+  password?: string; // Optional for social login
   name: string;
   role: 'developer' | 'tester' | 'admin';
 }
@@ -50,8 +50,8 @@ export async function createUser(userData: CreateUserData): Promise<User> {
     throw new Error('Invalid email format');
   }
 
-  // Validate password strength
-  if (password.length < 8) {
+  // Validate password strength (only for credential signup)
+  if (password && password.length < 8) {
     throw new Error('Password must be at least 8 characters long');
   }
 
@@ -60,8 +60,8 @@ export async function createUser(userData: CreateUserData): Promise<User> {
     throw new Error('Invalid role specified');
   }
 
-  // Hash password
-  const passwordHash = await hashPassword(password);
+  // Hash password (only if provided)
+  const passwordHash = password ? await hashPassword(password) : null;
 
   // Create user in database
   const newUser = await db.createUser({
@@ -100,6 +100,11 @@ export async function signInUser(signInData: SignInData): Promise<User> {
 // Get user by ID
 export async function getUserById(id: string): Promise<User | null> {
   return await db.getUserById(id);
+}
+
+// Get user by email
+export async function getUserByEmail(email: string): Promise<User | null> {
+  return await db.getUserByEmail(email);
 }
 
 // Update user

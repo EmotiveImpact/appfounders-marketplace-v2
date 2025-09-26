@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
-import { getPayloadClient } from '@/lib/payload/payload';
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
@@ -76,7 +75,6 @@ export async function POST(req: NextRequest) {
     const fileUrl = `/uploads/avatars/${fileName}`;
     
     // Update user in database with new avatar URL
-    const payload = await getPayloadClient();
     const updatedUser = await payload.update({
       collection: 'users',
       id: userId,

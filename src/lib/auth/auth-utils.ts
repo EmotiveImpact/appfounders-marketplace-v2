@@ -41,8 +41,8 @@ export function clearAuthCookies(): void {
     // Remove the auth cookie
     document.cookie = 'auth-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     
-    // Remove from localStorage
-    localStorage.removeItem('mock-auth-user');
+    // Clear any auth-related localStorage items
+    localStorage.removeItem('auth-user');
     
     // Trigger a storage event for any listeners
     window.dispatchEvent(new Event('storage'));

@@ -3,20 +3,57 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: [
-      'localhost', 
-      'via.placeholder.com', 
-      'randomuser.me',
-      'images.unsplash.com',
-      'placehold.co'
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
+        pathname: '/**',
+      },
     ],
   },
-  // Add Payload CMS configuration
+  // Exclude mobile directory from build
   webpack: (config) => {
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true,
+    config.resolve.alias = {
+      ...config.resolve.alias,
     };
+
+    // Exclude mobile directory
+    config.module.rules.push({
+      test: /mobile\//,
+      loader: 'ignore-loader'
+    });
+
     return config;
   },
 };

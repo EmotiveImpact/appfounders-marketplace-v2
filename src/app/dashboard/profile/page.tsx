@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { createClient } from '@/lib/supabase/client';
+import { useSession } from 'next-auth/react';
 import { 
   User, 
   Camera, 
@@ -14,13 +13,11 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { updateMockUserProfile } from '@/lib/auth/mock-auth';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -31,7 +28,9 @@ export default function ProfilePage() {
     bio: '',
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  
+
+  const user = session?.user;
+
   // Load user data
   useEffect(() => {
     if (user) {
@@ -87,86 +86,43 @@ export default function ProfilePage() {
     setSuccessMessage(null);
     
     try {
-      // Check if we're in development mode using mock auth
-      if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === 'true') {
-        // For development mode, use mock profile update
-        const updates: any = {
-          name: formData.name,
-          bio: formData.bio,
-        };
-        
-        // If there's a new avatar, use the data URL as the avatar
-        if (avatarPreview && avatarFile) {
-          updates.avatar = avatarPreview;
-        }
-        
-        const result = await updateMockUserProfile(updates);
-        
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to update profile');
-        }
-        
-        // Update cookie for middleware
-        if (user) {
-          document.cookie = `auth-user=${JSON.stringify({
-            ...user,
-            name: formData.name,
-            bio: formData.bio,
-            avatar: avatarPreview,
-          })}; path=/; max-age=86400`;
-        }
-        
-        setSuccessMessage('Profile updated successfully');
-        
-        // Refresh the page to show updated data
-        setTimeout(() => {
-          router.refresh();
-        }, 1500);
-        
-        return;
-      }
-      
-      // For production mode, use Supabase
-      // Update profile information via Supabase
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          name: formData.name,
-          bio: formData.bio,
-        },
-      });
-      
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-      
       // Upload avatar if changed
+      let avatarUrl = user?.avatar_url;
       if (avatarFile) {
-        // Create a unique file path
-        const filePath = `avatars/${user?.id}/${Date.now()}-${avatarFile.name}`;
-        
-        // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from('user-avatars')
-          .upload(filePath, avatarFile);
-        
-        if (uploadError) {
-          console.error('Avatar upload error:', uploadError);
-          // Continue even if avatar upload fails
+        const formData = new FormData();
+        formData.append('file', avatarFile);
+        formData.append('type', 'avatar');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          avatarUrl = uploadResult.url;
         } else {
-          // Get the public URL
-          const { data: publicUrlData } = supabase.storage
-            .from('user-avatars')
-            .getPublicUrl(filePath);
-          
-          if (publicUrlData?.publicUrl) {
-            // Update user with avatar URL
-            await supabase.auth.updateUser({
-              data: {
-                avatar: publicUrlData.publicUrl,
-              },
-            });
-          }
+          console.error('Avatar upload failed');
+          // Continue even if avatar upload fails
         }
+      }
+
+      // Update profile information via API
+      const updateResponse = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          bio: formData.bio,
+          avatar_url: avatarUrl,
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.error || 'Failed to update profile');
       }
       
       setSuccessMessage('Profile updated successfully');

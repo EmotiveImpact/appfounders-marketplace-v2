@@ -2,9 +2,23 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, CheckCircle, AlertCircle, File } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, File, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
+import {
+  validateFiles,
+  FileValidationConfig,
+  formatFileSize,
+  getFileIcon,
+  isImageFile,
+  createImagePreview,
+  generateUniqueFileName,
+  FILE_CONFIGS
+} from '@/lib/upload/validation';
 
 interface FileUploadProps {
   category: string;

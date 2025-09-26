@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPayloadClient } from '@/lib/payload/payload';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
 
@@ -40,7 +39,6 @@ export async function GET(
       );
     }
     
-    const payload = await getPayloadClient();
     
     // Get user profile
     const user = await payload.findByID({
@@ -95,7 +93,6 @@ export async function PATCH(
       delete data.role;
     }
     
-    const payload = await getPayloadClient();
     
     // Update user profile
     const updatedUser = await payload.update({
@@ -143,7 +140,6 @@ export async function DELETE(
       );
     }
     
-    const payload = await getPayloadClient();
     
     // Delete user
     await payload.delete({

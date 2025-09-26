@@ -12,7 +12,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { useTestCases } from '@/hooks/useTesterDashboard';
-import { getCurrentUser } from '@/services/authService';
+import { useSession } from 'next-auth/react';
 import { 
   formatDate, 
   getPriorityColorClass, 
@@ -23,32 +23,32 @@ import {
 import { TestCasePriority, TestCaseStatus } from '@/services/testCaseService';
 
 export default function TestCaseList() {
+  const { data: session } = useSession();
   const [userId, setUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<TestCasePriority | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<TestCaseStatus | 'all'>('all');
   const [sortField, setSortField] = useState<'updatedAt' | 'priority' | 'status'>('updatedAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  
-  const { 
-    testCases, 
-    loading, 
+
+  const {
+    testCases,
+    loading,
     error,
     fetchTestCasesByTesterId,
     fetchAllTestCases
   } = useTestCases();
-  
+
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setUserId(user.id);
-      if (user.role === 'admin') {
+    if (session?.user) {
+      setUserId(session.user.id);
+      if (session.user.role === 'admin') {
         fetchAllTestCases();
       } else {
-        fetchTestCasesByTesterId(user.id);
+        fetchTestCasesByTesterId(session.user.id);
       }
     }
-  }, [fetchTestCasesByTesterId, fetchAllTestCases]);
+  }, [session, fetchTestCasesByTesterId, fetchAllTestCases]);
   
   // Filter and sort test cases
   const filteredTestCases = testCases

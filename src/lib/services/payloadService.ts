@@ -2,14 +2,12 @@
  * Service for interacting with Payload CMS API on the server side
  */
 
-import { getPayloadClient } from '../payload/payload';
 
 /**
  * Get all apps with optional filtering
  */
 export async function getApps(filters?: Record<string, any>) {
   try {
-    const payload = await getPayloadClient();
     const query = {
       where: {
         ...(filters || {}),
@@ -34,7 +32,6 @@ export async function getApps(filters?: Record<string, any>) {
  */
 export async function getAppById(id: string) {
   try {
-    const payload = await getPayloadClient();
     return await payload.findByID({
       collection: 'apps',
       id,
@@ -50,7 +47,6 @@ export async function getAppById(id: string) {
  */
 export async function createApp(data: any) {
   try {
-    const payload = await getPayloadClient();
     return await payload.create({
       collection: 'apps',
       data,
@@ -66,7 +62,6 @@ export async function createApp(data: any) {
  */
 export async function updateApp(id: string, data: any) {
   try {
-    const payload = await getPayloadClient();
     return await payload.update({
       collection: 'apps',
       id,
@@ -83,7 +78,6 @@ export async function updateApp(id: string, data: any) {
  */
 export async function deleteApp(id: string) {
   try {
-    const payload = await getPayloadClient();
     return await payload.delete({
       collection: 'apps',
       id,
@@ -100,7 +94,6 @@ export async function deleteApp(id: string) {
  */
 export async function processPurchase(appId: string, testerId: string) {
   try {
-    const payload = await getPayloadClient();
     
     // Get the app
     const app = await payload.findByID({
@@ -170,7 +163,6 @@ export async function processPurchase(appId: string, testerId: string) {
  */
 export async function getUserPurchases(userId: string) {
   try {
-    const payload = await getPayloadClient();
     return await payload.find({
       collection: 'purchases',
       where: {
@@ -191,7 +183,6 @@ export async function getUserPurchases(userId: string) {
  */
 export async function getDeveloperSales(developerId: string) {
   try {
-    const payload = await getPayloadClient();
     return await payload.find({
       collection: 'purchases',
       where: {

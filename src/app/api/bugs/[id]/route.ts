@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getPayloadClient } from '@/lib/payload/payload';
 import { authOptions } from '@/lib/auth/auth-options';
 
 export async function GET(
@@ -15,7 +14,6 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = await getPayloadClient({});
     
     // Get the bug by ID
     const bug = await payload.findByID({
@@ -59,7 +57,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const payload = await getPayloadClient({});
     const body = await request.json();
     
     // Get the existing bug to check permissions
@@ -139,7 +136,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'Only admins can delete bugs' }, { status: 403 });
     }
     
-    const payload = await getPayloadClient({});
     
     // Delete the bug
     const deletedBug = await payload.delete({

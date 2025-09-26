@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
-import { getMockUser, isMockAuthenticated } from '@/lib/auth/mock-auth';
 
 export default function DashboardLayout({
   children,
@@ -17,27 +16,12 @@ export default function DashboardLayout({
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // For development mode, check localStorage first
-    if (process.env.NODE_ENV === 'development' && isMockAuthenticated()) {
-      const mockUser = getMockUser();
-      if (mockUser) {
-        setRole(mockUser.role);
-        
-        // Only redirect if user is on the base dashboard path
-        if (pathname === '/dashboard') {
-          router.push(`/dashboard/${mockUser.role}`);
-        }
-        return;
-      }
-    }
-
-    // For production or if no mock user found
     if (!isLoading) {
       if (!isAuthenticated) {
         router.push('/signin');
       } else if (user?.role) {
         setRole(user.role);
-        
+
         // Only redirect if user is on the base dashboard path
         if (pathname === '/dashboard') {
           router.push(`/dashboard/${user.role}`);

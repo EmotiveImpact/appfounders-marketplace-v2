@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { SocialLoginButtons } from './social-login-buttons';
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -208,6 +209,8 @@ export function SignUpForm() {
           </Link>
         </p>
       </div>
+
+      <SocialLoginButtons redirectTo={`/dashboard/${userType}`} />
     </form>
   );
 }

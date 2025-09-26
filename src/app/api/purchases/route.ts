@@ -69,7 +69,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(sales);
     } else if (session.user.role === 'admin') {
       // For admins, return all purchases
-      const payload = await getPayloadClient();
       const allPurchases = await payload.find({
         collection: 'purchases',
         depth: 2,
@@ -131,4 +130,3 @@ export async function POST(req: NextRequest) {
 }
 
 // Import at the top of the file
-import { getPayloadClient } from '@/lib/payload/payload';

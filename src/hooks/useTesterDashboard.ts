@@ -31,7 +31,13 @@ import {
   TestExecutionCreateInput
 } from '@/services/testCaseService';
 
-import { getCurrentUser } from '@/services/authService';
+import { useSession } from 'next-auth/react';
+
+// Helper function to get current user from session
+const getCurrentUser = () => {
+  const { data: session } = useSession();
+  return session?.user || null;
+};
 
 // Hook for bug management
 export const useBugs = () => {

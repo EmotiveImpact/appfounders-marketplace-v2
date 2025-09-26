@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { SocialLoginButtons } from './social-login-buttons';
 
 export function SignInForm() {
   const [email, setEmail] = useState('');
@@ -183,6 +184,7 @@ export function SignInForm() {
         </p>
       </div>
 
+      <SocialLoginButtons redirectTo={searchParams?.get('redirect') || '/dashboard'} />
 
     </form>
   );

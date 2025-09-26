@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPayloadClient } from '@/lib/payload/payload';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
 
@@ -27,7 +26,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const payload = await getPayloadClient();
 
     // Get user profile
     const user = await payload.findByID({
@@ -74,7 +72,6 @@ export async function PATCH(req: NextRequest) {
       delete data.email;
     }
     
-    const payload = await getPayloadClient();
     
     // Update user profile
     const updatedUser = await payload.update({
@@ -121,7 +118,6 @@ export async function POST(req: NextRequest) {
     
     // Handle form data with file upload
     const formData = await req.formData();
-    const payload = await getPayloadClient();
     
     // Handle avatar upload
     const avatar = formData.get('avatar') as File;

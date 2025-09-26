@@ -1,6 +1,9 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { signInUser } from "@/lib/auth/neon-auth";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import AppleProvider from "next-auth/providers/apple";
+import { signInUser, createUser, getUserByEmail } from "@/lib/auth/auth-options";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
@@ -61,6 +64,18 @@ export const authOptions: AuthOptions = {
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+    }),
+    AppleProvider({
+      clientId: process.env.APPLE_CLIENT_ID || "",
+      clientSecret: process.env.APPLE_CLIENT_SECRET || "",
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -79,6 +94,34 @@ export const authOptions: AuthOptions = {
     },
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Handle social login users
+      if (account?.provider !== 'credentials' && user.email) {
+        try {
+          // Check if user already exists in our database
+          let existingUser = await getUserByEmail(user.email);
+
+          if (!existingUser) {
+            // Create new user for social login
+            existingUser = await createUser({
+              email: user.email,
+              name: user.name || 'User',
+              role: 'tester', // Default role for social login users
+              password: '', // No password for social login
+            });
+          }
+
+          // Update user object with our database user info
+          user.id = existingUser.id;
+          user.role = existingUser.role;
+        } catch (error) {
+          console.error('Error handling social login:', error);
+          return false;
+        }
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
       // If the user object is passed, it means the user just signed in
       // Update the token with the user information
@@ -89,11 +132,11 @@ export const authOptions: AuthOptions = {
         token.email = customUser.email;
         token.name = customUser.name;
         token.role = customUser.role;
-        
+
         // Log token creation for debugging
         console.log('JWT token created with role:', customUser.role);
       }
-      
+
       return token;
     },
     async session({ session, token }) {

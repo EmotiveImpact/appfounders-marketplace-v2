@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getPayloadClient } from '@/lib/payload/payload';
 import { authOptions } from '@/lib/auth/auth-options';
 
 export async function GET(request: NextRequest) {
@@ -34,7 +33,6 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    const payload = await getPayloadClient({});
     
     // If a specific bug ID is requested
     if (path && path.startsWith('/api/bugs/')) {
@@ -80,7 +78,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only testers and admins can report bugs' }, { status: 403 });
     }
     
-    const payload = await getPayloadClient({});
     const body = await request.json();
     
     // Ensure the reportedBy field is set to the current user

@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getMockUser, isMockAuthenticated } from '@/lib/auth/mock-auth';
 import { useEffect, useState } from 'react';
 import { 
   Home, 
@@ -28,16 +27,6 @@ export default function DashboardSidebar() {
   const [userRole, setUserRole] = useState<string | null>(null);
   
   useEffect(() => {
-    // For development mode, check localStorage first
-    if (process.env.NODE_ENV === 'development' && isMockAuthenticated()) {
-      const mockUser = getMockUser();
-      if (mockUser) {
-        setUserRole(mockUser.role);
-        return;
-      }
-    }
-
-    // For production or if no mock user found
     if (user?.role) {
       setUserRole(user.role);
     }

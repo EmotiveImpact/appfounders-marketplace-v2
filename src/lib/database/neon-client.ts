@@ -12,16 +12,16 @@ export class DatabaseClient {
     email: string;
     name: string;
     role: string;
-    passwordHash: string;
+    passwordHash: string | null;
   }) {
     const { email, name, role, passwordHash } = userData;
-    
+
     const result = await this.sql`
       INSERT INTO users (email, name, role, password_hash)
       VALUES (${email}, ${name}, ${role}, ${passwordHash})
       RETURNING id, email, name, role, created_at
     `;
-    
+
     return result[0];
   }
 
@@ -227,7 +227,125 @@ export class DatabaseClient {
     
     return result;
   }
+
+  // Purchase operations
+  async createPurchase(purchaseData: {
+    user_id: string;
+    app_id: string;
+    stripe_payment_intent_id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    metadata?: any;
+  }) {
+    const {
+      user_id,
+      app_id,
+      stripe_payment_intent_id,
+      amount,
+      currency,
+      status,
+      metadata = {},
+    } = purchaseData;
+
+    const result = await this.sql`
+      INSERT INTO purchases (
+        user_id, app_id, stripe_payment_intent_id,
+        amount, currency, status, metadata
+      )
+      VALUES (
+        ${user_id}, ${app_id}, ${stripe_payment_intent_id},
+        ${amount}, ${currency}, ${status}, ${JSON.stringify(metadata)}
+      )
+      RETURNING *
+    `;
+
+    return result[0];
+  }
+
+  async updatePurchaseStatus(paymentIntentId: string, status: string) {
+    const result = await this.sql`
+      UPDATE purchases
+      SET status = ${status}, updated_at = NOW()
+      WHERE stripe_payment_intent_id = ${paymentIntentId}
+      RETURNING *
+    `;
+
+    return result[0];
+  }
+
+  async incrementAppSales(appId: string) {
+    const result = await this.sql`
+      UPDATE apps
+      SET sales_count = COALESCE(sales_count, 0) + 1,
+          updated_at = NOW()
+      WHERE id = ${appId}
+      RETURNING *
+    `;
+
+    return result[0];
+  }
+
+  async getAppsByDeveloper(developerId: string, status?: string) {
+    if (status) {
+      const result = await this.sql`
+        SELECT * FROM apps
+        WHERE developer_id = ${developerId} AND status = ${status}
+        ORDER BY created_at DESC
+      `;
+      return result;
+    } else {
+      const result = await this.sql`
+        SELECT * FROM apps
+        WHERE developer_id = ${developerId}
+        ORDER BY created_at DESC
+      `;
+      return result;
+    }
+  }
+
+  async createApp(appData: {
+    name: string;
+    description: string;
+    category: string;
+    price: number;
+    developer_id: string;
+    images?: string[];
+    features?: string[];
+    requirements?: any;
+    status?: string;
+  }) {
+    const {
+      name,
+      description,
+      category,
+      price,
+      developer_id,
+      images = [],
+      features = [],
+      requirements = {},
+      status = 'pending',
+    } = appData;
+
+    const result = await this.sql`
+      INSERT INTO apps (
+        name, description, category, price, developer_id,
+        images, features, requirements, status
+      )
+      VALUES (
+        ${name}, ${description}, ${category}, ${price}, ${developer_id},
+        ${JSON.stringify(images)}, ${JSON.stringify(features)},
+        ${JSON.stringify(requirements)}, ${status}
+      )
+      RETURNING *
+    `;
+
+    return result[0];
+  }
 }
 
 // Export singleton instance
 export const db = new DatabaseClient();
+
+// Export raw SQL client for direct queries
+export const neonClient = { sql };
