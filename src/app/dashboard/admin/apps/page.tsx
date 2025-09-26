@@ -125,7 +125,7 @@ export default function AdminAppsPage() {
   }, [apps, statusFilter, categoryFilter, searchTerm]);
 
   // Get unique categories for filter
-  const categories = [...new Set(apps.map((app: any) => app.category))];
+  const categories = Array.from(new Set(apps.map((app: App) => app.category)));
 
   // Format date
   const formatDate = (dateString: string) => {
