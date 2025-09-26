@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TestCase, TestExecutionCreateInput } from '@/services/testCaseService';
 import { useTesterDashboard } from '@/hooks/useTesterDashboard';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface TestCaseExecutionFormProps {
   testCase: TestCase;
