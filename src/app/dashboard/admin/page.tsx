@@ -10,6 +10,30 @@ interface UserWithRole {
   image?: string | null;
   role?: string;
 }
+
+interface RecentUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joinedAt: string;
+}
+
+interface PendingApp {
+  id: string;
+  name: string;
+  developer: string;
+  submittedAt: string;
+}
+
+interface DashboardStats {
+  totalUsers: number;
+  totalApps: number;
+  pendingApprovals: number;
+  totalRevenue: number;
+  recentUsers: RecentUser[];
+  pendingApps: PendingApp[];
+}
 import { 
   Users, 
   Package, 
@@ -26,7 +50,7 @@ export default function AdminDashboardPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalApps: 0,
     pendingApprovals: 0,
