@@ -57,7 +57,7 @@ export default function BlogDetailPage() {
       text = content
         .map(node => {
           if (typeof node === 'string') return node;
-          if (node.children) return node.children.map(child => child.text || '').join(' ');
+          if (node.children) return node.children.map((child: any) => child.text || '').join(' ');
           return '';
         })
         .join(' ');
