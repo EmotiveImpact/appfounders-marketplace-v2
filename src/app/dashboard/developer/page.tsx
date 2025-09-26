@@ -19,6 +19,13 @@ import {
 } from 'lucide-react';
 import { mockAuth } from '@/lib/auth/mock-auth';
 
+interface UserWithRole {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+}
+
 export default function DeveloperDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -42,9 +49,10 @@ export default function DeveloperDashboard() {
   
   // Redirect if not authenticated or not a developer
   useEffect(() => {
+    const userWithRole = user as UserWithRole;
     if (!authLoading && !isAuthenticated) {
       router.push('/signin');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'developer') {
+    } else if (!authLoading && isAuthenticated && userWithRole?.role !== 'developer') {
       router.push('/dashboard');
     }
     // No else case - if user is authenticated and is a developer, stay on this page
