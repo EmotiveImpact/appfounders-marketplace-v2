@@ -3,6 +3,17 @@ import { getPayloadClient } from '@/lib/payload/payload';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
 
+// Custom session type with extended user properties
+interface CustomSession {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    image?: string | null;
+  }
+}
+
 // GET /api/users/[id] - Get user by ID (admin only or self)
 export async function GET(
   req: NextRequest,
@@ -12,15 +23,15 @@ export async function GET(
     const { id } = params;
     
     // Verify user is authenticated
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     // Only allow admins to view other users or users to view themselves
     if (session.user.role !== 'admin' && session.user.id !== id) {
       return NextResponse.json(
@@ -59,15 +70,15 @@ export async function PATCH(
     const { id } = params;
     
     // Verify user is authenticated and is an admin
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     // Only allow admins to update other users or users to update themselves
     if (session.user.role !== 'admin' && session.user.id !== id) {
       return NextResponse.json(
@@ -115,15 +126,15 @@ export async function DELETE(
     const { id } = params;
     
     // Verify user is authenticated and is an admin
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     // Only allow admins to delete users
     if (session.user.role !== 'admin') {
       return NextResponse.json(
