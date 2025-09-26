@@ -84,17 +84,27 @@ async function handleCheckoutSessionCompleted(session: any) {
       throw purchaseError;
     }
 
-    // Update app purchase count
-    const { error: appUpdateError } = await supabase
+    // Update app purchase count - first get current values
+    const { data: currentApp, error: fetchError } = await supabase
       .from('apps')
-      .update({
-        purchase_count: supabase.raw('purchase_count + 1'),
-        total_revenue: supabase.raw(`total_revenue + ${session.amount_total}`),
-      })
-      .eq('id', appId);
+      .select('purchase_count, total_revenue')
+      .eq('id', appId)
+      .single();
 
-    if (appUpdateError) {
-      console.error('Error updating app stats:', appUpdateError);
+    if (!fetchError && currentApp) {
+      const { error: appUpdateError } = await supabase
+        .from('apps')
+        .update({
+          purchase_count: (currentApp.purchase_count || 0) + 1,
+          total_revenue: (currentApp.total_revenue || 0) + (session.amount_total || 0),
+        })
+        .eq('id', appId);
+
+      if (appUpdateError) {
+        console.error('Error updating app stats:', appUpdateError);
+      }
+    } else {
+      console.error('Error fetching current app data:', fetchError);
     }
 
     // TODO: Send confirmation email to user
