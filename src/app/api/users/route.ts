@@ -3,21 +3,32 @@ import { getPayloadClient } from '@/lib/payload/payload';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
 
+// Custom session type with extended user properties
+interface CustomSession {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    image?: string | null;
+  }
+}
+
 // GET /api/users - Get current user profile
 export async function GET(req: NextRequest) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     const payload = await getPayloadClient();
-    
+
     // Get user profile
     const user = await payload.findByID({
       collection: 'users',
@@ -41,8 +52,8 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -89,8 +100,8 @@ export async function PATCH(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
