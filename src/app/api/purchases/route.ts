@@ -3,28 +3,39 @@ import { processPurchase, getUserPurchases, getDeveloperSales } from '@/lib/serv
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
 
+// Custom session type with extended user properties
+interface CustomSession {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    image?: string | null;
+  }
+}
+
 // GET /api/purchases - Get purchases for a user or sales for a developer
 export async function GET(req: NextRequest) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession(authOptions);
-    
+    const session = await getServerSession(authOptions) as CustomSession | null;
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    
+
     // Extract query parameters
     const { searchParams } = new URL(req.url);
     const tester = searchParams.get('tester');
     const developer = searchParams.get('developer');
-    
+
     // If tester parameter is provided, get purchases for that tester
     if (tester) {
       // Only allow users to view their own purchases or admins to view any
-      if (tester !== session.user?.id && session.user?.role !== 'admin') {
+      if (tester !== session.user.id && session.user.role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these purchases' },
           { status: 403 }
