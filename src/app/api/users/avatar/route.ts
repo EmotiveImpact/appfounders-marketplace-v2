@@ -6,10 +6,21 @@ import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
+// Custom session type with extended user properties
+interface CustomSession {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    image?: string | null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions) as CustomSession | null;
     if (!session || !session.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
