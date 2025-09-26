@@ -54,7 +54,7 @@ export default function CreateBlogPage() {
     
     // Clear error when user types
     if ((errors as any)[name]) {
-      setErrors((prev) => ({
+      setErrors((prev: any) => ({
         ...prev,
         [name]: null,
       }));
