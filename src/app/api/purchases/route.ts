@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     // If tester parameter is provided, get purchases for that tester
     if (tester) {
       // Only allow users to view their own purchases or admins to view any
-      if (tester !== session.user.id && session.user.role !== 'admin') {
+      if (tester !== session.user?.id && session.user?.role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these purchases' },
           { status: 403 }
