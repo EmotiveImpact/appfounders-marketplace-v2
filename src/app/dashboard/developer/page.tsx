@@ -17,7 +17,7 @@ import {
   Download,
   TrendingUp
 } from 'lucide-react';
-import { getMockUser, isMockAuthenticated } from '@/lib/auth/mock-auth';
+import { mockAuth } from '@/lib/auth/mock-auth';
 
 export default function DeveloperDashboard() {
   const router = useRouter();
@@ -31,8 +31,8 @@ export default function DeveloperDashboard() {
   
   // Check for mock authentication in development mode
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && isMockAuthenticated()) {
-      const mockUser = getMockUser();
+    if (process.env.NODE_ENV === 'development') {
+      const mockUser = mockAuth.getCurrentUser();
       if (mockUser && mockUser.role !== 'developer') {
         console.log('Mock user is not a developer, redirecting...');
         router.push('/dashboard');
