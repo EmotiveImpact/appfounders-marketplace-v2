@@ -136,7 +136,9 @@ export default function AdminUsersPage() {
 
   const handleDelete = () => {
     // In a real app, this would be an API call
-    setUsers(users.filter((u: any) => u.id !== userToDelete.id));
+    if (userToDelete) {
+      setUsers(users.filter((u: AdminUser) => u.id !== userToDelete.id));
+    }
     setShowDeleteModal(false);
     setUserToDelete(null);
   };
