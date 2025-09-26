@@ -53,7 +53,7 @@ export default function CreateBlogPage() {
     }));
     
     // Clear error when user types
-    if (errors[name]) {
+    if ((errors as any)[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: null,
@@ -61,7 +61,7 @@ export default function CreateBlogPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     
     if (!validateForm()) return;
