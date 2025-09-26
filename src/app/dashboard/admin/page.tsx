@@ -24,6 +24,7 @@ interface PendingApp {
   name: string;
   developer: string;
   submittedAt: string;
+  status: string;
 }
 
 interface DashboardStats {
