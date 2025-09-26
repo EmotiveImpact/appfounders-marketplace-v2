@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
+
+interface UserWithRole {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+}
 import { 
   Users, 
   Package, 
@@ -36,8 +43,9 @@ export default function AdminDashboardPage() {
     }
 
     // Check if user is admin
-    if (!authLoading && isAuthenticated && user?.role !== 'admin') {
-      router.push(`/dashboard/${user?.role || ''}`);
+    const userWithRole = user as UserWithRole;
+    if (!authLoading && isAuthenticated && userWithRole?.role !== 'admin') {
+      router.push(`/dashboard/${userWithRole?.role || ''}`);
       return;
     }
 
