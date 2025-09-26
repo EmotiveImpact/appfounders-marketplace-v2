@@ -10,6 +10,19 @@ interface UserWithRole {
   image?: string | null;
   role?: string;
 }
+
+interface App {
+  id: string;
+  name: string;
+  developer: string;
+  developerEmail: string;
+  category: string;
+  price: number;
+  status: string;
+  submittedAt: string;
+  updatedAt: string;
+  rejectionReason?: string;
+}
 import { 
   Loader2,
   Search,
@@ -32,11 +45,11 @@ export default function AdminAppsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [apps, setApps] = useState([]);
-  const [filteredApps, setFilteredApps] = useState([]);
+  const [apps, setApps] = useState<App[]>([]);
+  const [filteredApps, setFilteredApps] = useState<App[]>([]);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [selectedApp, setSelectedApp] = useState(null);
+  const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
