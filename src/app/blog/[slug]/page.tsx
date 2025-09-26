@@ -85,36 +85,36 @@ export default function BlogDetailPage() {
             }
             
             if (node.type === 'h1') {
-              return <h1 key={index}>{node.children.map(child => child.text).join('')}</h1>;
+              return <h1 key={index}>{node.children.map((child: any) => child.text).join('')}</h1>;
             }
             
             if (node.type === 'h2') {
-              return <h2 key={index}>{node.children.map(child => child.text).join('')}</h2>;
+              return <h2 key={index}>{node.children.map((child: any) => child.text).join('')}</h2>;
             }
-            
+
             if (node.type === 'h3') {
-              return <h3 key={index}>{node.children.map(child => child.text).join('')}</h3>;
+              return <h3 key={index}>{node.children.map((child: any) => child.text).join('')}</h3>;
             }
-            
+
             if (node.type === 'p') {
-              return <p key={index}>{node.children.map(child => child.text).join('')}</p>;
+              return <p key={index}>{node.children.map((child: any) => child.text).join('')}</p>;
             }
             
             if (node.type === 'ul') {
               return (
                 <ul key={index}>
                   {node.children.map((li, liIndex) => (
-                    <li key={liIndex}>{li.children.map(child => child.text).join('')}</li>
+                    <li key={liIndex}>{li.children.map((child: any) => child.text).join('')}</li>
                   ))}
                 </ul>
               );
             }
-            
+
             if (node.type === 'ol') {
               return (
                 <ol key={index}>
                   {node.children.map((li, liIndex) => (
-                    <li key={liIndex}>{li.children.map(child => child.text).join('')}</li>
+                    <li key={liIndex}>{li.children.map((child: any) => child.text).join('')}</li>
                   ))}
                 </ol>
               );
@@ -123,7 +123,7 @@ export default function BlogDetailPage() {
             if (node.type === 'blockquote') {
               return (
                 <blockquote key={index} className="border-l-4 border-indigo-500 pl-4 italic">
-                  {node.children.map(child => child.text).join('')}
+                  {node.children.map((child: any) => child.text).join('')}
                 </blockquote>
               );
             }
