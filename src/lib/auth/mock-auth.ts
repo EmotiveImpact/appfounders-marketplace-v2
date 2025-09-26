@@ -79,6 +79,34 @@ export const mockAuth = {
   }
 };
 
+// Update user profile function
+export const updateMockUserProfile = async (updates: Partial<MockUser>): Promise<{ success: boolean; error?: string }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      try {
+        const currentUser = mockAuth.getCurrentUser();
+        if (!currentUser) {
+          resolve({ success: false, error: 'No user logged in' });
+          return;
+        }
+
+        const updatedUser = { ...currentUser, ...updates };
+        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+
+        // Also update the user in the mockUsers array
+        const userIndex = mockUsers.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+          mockUsers[userIndex] = updatedUser;
+        }
+
+        resolve({ success: true });
+      } catch (error) {
+        resolve({ success: false, error: 'Failed to update profile' });
+      }
+    }, 500);
+  });
+};
+
 // Hook for using mock auth
 export const useMockAuth = () => {
   return {

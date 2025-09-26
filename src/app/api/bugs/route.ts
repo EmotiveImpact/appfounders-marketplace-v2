@@ -28,11 +28,11 @@ export async function GET(request: NextRequest) {
     }
     
     // Add any additional query parameters
-    for (const [key, value] of searchParams.entries()) {
+    searchParams.forEach((value, key) => {
       if (key !== 'path') {
         query[key] = value;
       }
-    }
+    });
     
     const payload = await getPayloadClient({});
     
