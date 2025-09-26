@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTesterDashboard } from '@/hooks/useTesterDashboard';
 import { TestCase, TestExecution } from '@/services/testCaseService';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function TestCaseDetailPage() {
   const { id } = useParams();

@@ -7,10 +7,8 @@ import { TestCase, TestExecution } from '@/services/testCaseService';
 import TestCaseExecutionForm from '@/components/dashboard/tester/TestCaseExecutionForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
-export const metadata = {
-  title: 'Execute Test Case | AppFounders Tester Dashboard',
-  description: 'Execute test cases and record results step by step'
-};
+// Note: metadata cannot be exported from client components
+// This would be handled by the parent layout or a server component
 
 export default function TestCaseExecutePage() {
   const { id } = useParams();
