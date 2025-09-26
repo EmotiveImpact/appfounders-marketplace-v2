@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
+
+interface UserWithRole {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: string;
+}
 import { 
   BarChart,
   Bar,
@@ -107,9 +114,10 @@ export default function AppAnalyticsPage() {
   
   // Redirect if not authenticated or not a developer
   useEffect(() => {
+    const userWithRole = user as UserWithRole;
     if (!authLoading && !isAuthenticated) {
       router.push('/signin');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'developer') {
+    } else if (!authLoading && isAuthenticated && userWithRole?.role !== 'developer') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);
