@@ -26,7 +26,7 @@ export default function CreateBlogPage() {
     category: '',
     image: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
 
