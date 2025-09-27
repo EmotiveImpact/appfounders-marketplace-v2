@@ -339,7 +339,7 @@ export async function submitForReview(
     // Send notification to developer
     await sendNotification(
       developerId,
-      'app_submitted',
+      'app_submitted' as any,
       'App Submitted for Review',
       `Your app "${app.name}" has been submitted for review. We'll notify you once the review is complete.`,
       { app_id: app.id, app_name: app.name }
@@ -431,12 +431,12 @@ export async function reviewSubmission(
 
     switch (decision.action) {
       case 'approve':
-        notificationType = 'app_approved';
+        notificationType = 'app_approved' as any;
         notificationTitle = 'App Approved!';
         notificationMessage = `Congratulations! Your app "${app.name}" has been approved and is now live on the marketplace.`;
         break;
       case 'reject':
-        notificationType = 'app_rejected';
+        notificationType = 'app_rejected' as any;
         notificationTitle = 'App Rejected';
         notificationMessage = `Your app "${app.name}" has been rejected. Please review the feedback and resubmit.`;
         break;

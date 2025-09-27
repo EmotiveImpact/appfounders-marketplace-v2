@@ -5,13 +5,13 @@ import { neonClient } from '@/lib/database/neon-client';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-08-27.basil',
 });
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     const earningsResult = await neonClient.query(earningsQuery, [(session.user as any).id]);
 
     return NextResponse.json({
-      payouts: result.rows,
+      payouts: result,
       pending_earnings: earningsResult[0],
       pagination: {
         page,
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

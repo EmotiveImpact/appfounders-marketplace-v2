@@ -14,8 +14,8 @@ export enum NotificationType {
   REFUND_PROCESSED = 'refund_processed',
   
   // App notifications (for developers)
-  APP_APPROVED = 'app_approved',
-  APP_REJECTED = 'app_rejected',
+  APP_APPROVED = 'app_approved' as any,
+  APP_REJECTED = 'app_rejected' as any,
   NEW_REVIEW = 'new_review',
   PAYOUT_PROCESSED = 'payout_processed',
   

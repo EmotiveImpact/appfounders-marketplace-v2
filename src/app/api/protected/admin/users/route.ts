@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProtectedRoute, USER_ROLES } from '@/lib/auth/route-protection';
-import { db } from '@/lib/database/neon-client';
+import { neonClient } from '@/lib/database/neon-client';
+import bcrypt from 'bcryptjs';
+
+const hashPassword = async (password: string) => {
+  return await bcrypt.hash(password, 12);
+};
 
 // GET /api/protected/admin/users - Get all users (admin only)
 export const GET = createProtectedRoute(
   async (req: NextRequest, user: any) => {
     try {
-      const users = await db.getAllUsers();
+      const users = await neonClient.query('SELECT * FROM users ORDER BY created_at DESC');
       
       // Remove sensitive information
       const sanitizedUsers = users.map(user => ({
@@ -54,20 +59,18 @@ export const POST = createProtectedRoute(
       }
 
       // Create user
-      const newUser = await db.createUser({
-        email,
-        name,
-        role,
-        passwordHash: password ? await hashPassword(password) : null,
-      });
+      const newUser = await neonClient.query(
+        'INSERT INTO users (email, name, role, password_hash) VALUES ($1, $2, $3, $4) RETURNING *',
+        [email, name, role, password ? await hashPassword(password) : null]
+      );
 
       return NextResponse.json({
         success: true,
         user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name,
-          role: newUser.role,
+          id: newUser[0].id,
+          email: newUser[0].email,
+          name: newUser[0].name,
+          role: newUser[0].role,
         },
       });
     } catch (error: any) {

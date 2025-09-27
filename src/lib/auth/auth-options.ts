@@ -149,7 +149,7 @@ export const authOptions: AuthOptions = {
         
         // Add custom properties to the user object
         (session.user as any).id = (token as CustomJWT).id as string;
-        session.user.email = token.email as string;
+        (session.user as any).email = token.email as string;
         session.user.name = token.name as string;
         (session.user as any).role = (token as CustomJWT).role as string;
       }

@@ -151,7 +151,7 @@ export const POST = createProtectedRoute(
             activation_instructions: `Use this license key to activate ${purchase.app_name}. Keep this key secure and do not share it with others.`,
             support_url: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
           },
-        });
+        } as any);
       } catch (emailError) {
         console.error('Failed to send license key email:', emailError);
         // Don't fail the license generation if email fails

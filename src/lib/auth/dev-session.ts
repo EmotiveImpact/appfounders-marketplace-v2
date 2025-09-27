@@ -46,5 +46,5 @@ export function isDevSession(session: any): boolean {
     return false;
   }
   
-  return session.user.email.endsWith('@dev.local');
+  return (session.user as any).email.endsWith('@dev.local');
 }

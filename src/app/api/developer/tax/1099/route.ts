@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         box_15_state_tax_withheld: 0, // State tax withheld (if applicable)
         box_17_state_income: totalPayments, // State income (same as federal)
       },
-      quarterly_breakdown: quarterlyResult.rows,
+      quarterly_breakdown: quarterlyResult,
       transaction_summary: {
         total_transactions: parseInt(payments.transaction_count),
         first_payment_date: payments.first_payment,
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

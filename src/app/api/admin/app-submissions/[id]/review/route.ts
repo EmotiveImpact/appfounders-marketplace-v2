@@ -140,7 +140,7 @@ export const POST = createProtectedRoute(
               created_at
             ) VALUES (
               ${app.developer_id},
-              'app_approved',
+              'app_approved' as any,
               ${JSON.stringify({
                 app_id: submissionId,
                 app_name: app.name,

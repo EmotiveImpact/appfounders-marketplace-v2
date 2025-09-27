@@ -20,7 +20,7 @@ export async function GET(
     // Use the test developer ID in development mode, otherwise use the session user email as identifier
     const userId = process.env.NODE_ENV === 'development' 
       ? 'dev_12345'  // This matches the ID used in our seed script
-      : session.user.email || 'unknown_user';
+      : (session.user as any).email || 'unknown_user';
     
     const searchParams = request.nextUrl.searchParams;
     const timeframe = searchParams.get('timeframe') || '30days';

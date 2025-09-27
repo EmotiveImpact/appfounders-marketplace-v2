@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     // If tester parameter is provided, get purchases for that tester
     if (tester) {
       // Only allow users to view their own purchases or admins to view any
-      if (tester !== (session.user as any).id && session.user.role !== 'admin') {
+      if (tester !== (session.user as any).id && (session.user as any).role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these purchases' },
           { status: 403 }
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     // If developer parameter is provided, get sales for that developer
     if (developer) {
       // Only allow developers to view their own sales or admins to view any
-      if (developer !== (session.user as any).id && session.user.role !== 'admin') {
+      if (developer !== (session.user as any).id && (session.user as any).role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these sales' },
           { status: 403 }
@@ -61,13 +61,13 @@ export async function GET(req: NextRequest) {
     }
     
     // If no parameters are provided, return based on user role
-    if (session.user.role === 'tester') {
+    if ((session.user as any).role === 'tester') {
       const purchases = await getUserPurchases((session.user as any).id);
       return NextResponse.json(purchases);
-    } else if (session.user.role === 'developer') {
+    } else if ((session.user as any).role === 'developer') {
       const sales = await getDeveloperSales((session.user as any).id);
       return NextResponse.json(sales);
-    } else if (session.user.role === 'admin') {
+    } else if ((session.user as any).role === 'admin') {
       // For admins, return all purchases
       const allPurchases = await payload.find({
         collection: 'purchases',
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'tester' && session.user.role !== 'admin') {
+    if ((session.user as any).role !== 'tester' && (session.user as any).role !== 'admin') {
       return NextResponse.json(
         { error: 'Only testers can make purchases' },
         { status: 403 }

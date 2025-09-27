@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -240,10 +240,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       overview: overviewResult[0],
-      time_series: timeSeriesResult.rows,
-      app_breakdown: appRevenueResult.rows,
-      category_breakdown: categoryRevenueResult.rows,
-      top_customers: topCustomersResult.rows,
+      time_series: timeSeriesResult,
+      app_breakdown: appRevenueResult,
+      category_breakdown: categoryRevenueResult,
+      top_customers: topCustomersResult,
       refund_analytics: refundResult[0],
       growth_metrics: growthMetrics,
       payout_summary: payoutResult[0],

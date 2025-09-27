@@ -117,15 +117,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
       // App events
       socket.on(EventTypes.APP_SUBMITTED, (data) => {
-        updateState({ lastMessage: { type: 'app_submitted', data } });
+        updateState({ lastMessage: { type: 'app_submitted' as any, data } });
       });
 
       socket.on(EventTypes.APP_APPROVED, (data) => {
-        updateState({ lastMessage: { type: 'app_approved', data } });
+        updateState({ lastMessage: { type: 'app_approved' as any, data } });
       });
 
       socket.on(EventTypes.APP_REJECTED, (data) => {
-        updateState({ lastMessage: { type: 'app_rejected', data } });
+        updateState({ lastMessage: { type: 'app_rejected' as any, data } });
       });
 
       // Purchase events

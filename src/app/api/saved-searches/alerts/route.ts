@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      alerts: result.rows,
+      alerts: result,
       pagination: {
         page,
         limit,
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({
               message: 'Test alert sent successfully',
               results_count: searchResults.length,
-              results: searchResults.rows,
+              results: searchResults,
             });
           } else {
             return NextResponse.json({

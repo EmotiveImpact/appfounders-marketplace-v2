@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -191,12 +191,12 @@ export async function GET(request: NextRequest) {
         report_type: 'Annual Tax Report',
       },
       annual_summary: annualSummaryResult[0],
-      monthly_breakdown: monthlyBreakdownResult.rows,
-      quarterly_breakdown: quarterlyBreakdownResult.rows,
-      app_revenue: appRevenueResult.rows,
+      monthly_breakdown: monthlyBreakdownResult,
+      quarterly_breakdown: quarterlyBreakdownResult,
+      app_revenue: appRevenueResult,
       refunds: refundsResult[0],
       payouts: payoutsResult[0],
-      transactions: transactionsResult.rows,
+      transactions: transactionsResult,
       tax_notes: {
         gross_revenue_note: 'Total amount received from customers before platform fees',
         net_revenue_note: 'Amount after platform fees (your actual income)',
@@ -257,7 +257,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

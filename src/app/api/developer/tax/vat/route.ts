@@ -40,7 +40,7 @@ const VAT_RATES = {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate VAT obligations
     const vatCalculations = salesByCountryResult.map(sale => {
-      const vatRate = VAT_RATES[sale.customer_country] || 0;
+      const vatRate = VAT_RATES[sale.customer_country as keyof typeof VAT_RATES] || 0;
       const grossRevenue = parseInt(sale.gross_revenue);
       const netRevenue = parseInt(sale.net_revenue);
       
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       },
       vat_calculations: vatCalculations,
       totals,
-      monthly_breakdown: monthlyBreakdownResult.rows,
+      monthly_breakdown: monthlyBreakdownResult,
       vat_notes: {
         disclaimer: 'This is a simplified VAT calculation. Consult a tax professional for accurate VAT obligations.',
         rates_note: 'VAT rates are approximate and may not reflect current rates or exemptions.',

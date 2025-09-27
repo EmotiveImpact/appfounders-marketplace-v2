@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProtectedRoute, USER_ROLES } from '@/lib/auth/route-protection';
-import { db } from '@/lib/database/neon-client';
+import { neonClient } from '@/lib/database/neon-client';
 
 // GET /api/protected/developer/apps - Get developer's apps
 export const GET = createProtectedRoute(
@@ -10,7 +10,10 @@ export const GET = createProtectedRoute(
       const status = searchParams.get('status');
       
       // Get apps for the current developer
-      const apps = await db.getAppsByDeveloper(user.id, status);
+      const apps = await neonClient.query(
+        'SELECT * FROM apps WHERE developer_id = $1' + (status ? ' AND status = $2' : ''),
+        status ? [user.id, status] : [user.id]
+      );
 
       return NextResponse.json({
         success: true,

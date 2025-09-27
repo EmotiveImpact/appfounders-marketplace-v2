@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         user_points: userPointsResult[0],
-        activities: activitiesResult.rows,
+        activities: activitiesResult,
         period,
       });
     } else if (type === 'badges') {
@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
       const availableBadgesResult = await neonClient.query(availableBadgesQuery, [(session.user as any).id]);
 
       return NextResponse.json({
-        earned_badges: badgesResult.rows,
-        available_badges: availableBadgesResult.rows,
+        earned_badges: badgesResult,
+        available_badges: availableBadgesResult,
       });
     } else if (type === 'leaderboard') {
       // Get leaderboard
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
       const userRankResult = await neonClient.query(userRankQuery, [(session.user as any).id]);
 
       return NextResponse.json({
-        leaderboard: leaderboardResult.rows,
+        leaderboard: leaderboardResult,
         user_rank: userRankResult[0] || { rank: null, total_points: 0 },
         period,
       });
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         overview: overviewResult[0],
-        recent_badges: recentBadgesResult.rows,
+        recent_badges: recentBadgesResult,
       });
     }
   } catch (error) {
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

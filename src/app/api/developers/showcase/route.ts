@@ -127,9 +127,9 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         developer: developer,
-        apps: appsResult.rows,
-        achievements: achievementsResult.rows,
-        contributions: contributionsResult.rows,
+        apps: appsResult,
+        achievements: achievementsResult,
+        contributions: contributionsResult,
       });
     } else {
       // Get all developer showcases
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
         LIMIT $${params.length + 1} OFFSET $${params.length + 2}
       `;
 
-      params.push(limit, offset);
+      params.push(limit.toString(), offset.toString());
 
       const developersResult = await neonClient.query(developersQuery, params);
 
@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
       const countResult = await neonClient.query(countQuery, params.slice(0, -2));
 
       return NextResponse.json({
-        developers: developersResult.rows,
+        developers: developersResult,
         pagination: {
           page,
           limit,
@@ -243,7 +243,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!!session?.user || !(session.user as any).id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

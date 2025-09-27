@@ -190,7 +190,7 @@ export const POST = createProtectedRoute(
         )
         VALUES (
           ${user.id},
-          'verification_submitted',
+          'verification_submitted' as any,
           ${JSON.stringify({
             business_type: data.business_type,
             tax_country: data.tax_country,
@@ -204,11 +204,11 @@ export const POST = createProtectedRoute(
       try {
         await sendNotification(
           user.id,
-          'verification_submitted',
+          'verification_submitted' as any as any,
           'Verification Submitted',
           'Your developer verification has been submitted and is under review. We will notify you within 2-3 business days.',
           {
-            type: 'verification_submitted',
+            type: 'verification_submitted' as any,
             business_type: data.business_type,
           }
         );
@@ -225,7 +225,7 @@ export const POST = createProtectedRoute(
         for (const admin of adminUsers) {
           await sendNotification(
             admin.id,
-            'new_verification',
+            'new_verification' as any,
             'New Developer Verification',
             `${data.legal_name} has submitted developer verification and requires review.`,
             {

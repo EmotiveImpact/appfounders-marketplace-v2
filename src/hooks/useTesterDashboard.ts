@@ -46,9 +46,9 @@ const getCurrentUser = (): ExtendedUser | null => {
   const { data: session } = useSession();
   if (session?.user?.email) {
     return {
-      id: session.user.email, // Use email as ID for now
+      id: (session.user as any).email, // Use email as ID for now
       name: session.user.name || '',
-      email: session.user.email,
+      email: (session.user as any).email,
       image: session.user.image
     };
   }

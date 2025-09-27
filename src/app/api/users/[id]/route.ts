@@ -32,7 +32,7 @@ export async function GET(
     }
 
     // Only allow admins to view other users or users to view themselves
-    if (session.user.role !== 'admin' && (session.user as any).id !== id) {
+    if ((session.user as any).role !== 'admin' && (session.user as any).id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -78,7 +78,7 @@ export async function PATCH(
     }
 
     // Only allow admins to update other users or users to update themselves
-    if (session.user.role !== 'admin' && (session.user as any).id !== id) {
+    if ((session.user as any).role !== 'admin' && (session.user as any).id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -89,7 +89,7 @@ export async function PATCH(
     const data = await req.json();
     
     // If not admin, prevent changing role
-    if (session.user.role !== 'admin' && data.role) {
+    if ((session.user as any).role !== 'admin' && data.role) {
       delete data.role;
     }
     
@@ -133,7 +133,7 @@ export async function DELETE(
     }
 
     // Only allow admins to delete users
-    if (session.user.role !== 'admin') {
+    if ((session.user as any).role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }

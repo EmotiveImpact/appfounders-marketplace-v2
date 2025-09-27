@@ -53,12 +53,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     try {
       // Generate presigned download URL
-      const downloadUrl = await getPresignedDownloadUrl(tokenData.file_key, 300); // 5 minutes
+      const downloadUrl = await getPresignedDownloadUrl(tokenData!.file_key, 300); // 5 minutes
 
       // Log successful download
       await logDownloadAccess(
-        tokenData.user_id,
-        tokenData.file_key,
+        tokenData!.user_id,
+        tokenData!.file_key,
         'download_started',
         ipAddress,
         userAgent,
@@ -77,8 +77,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       
       // Log error
       await logDownloadAccess(
-        tokenData.user_id,
-        tokenData.file_key,
+        tokenData!.user_id,
+        tokenData!.file_key,
         'download_error',
         ipAddress,
         userAgent,
@@ -142,13 +142,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           fileName: fileInfo?.fileName,
           fileSize: fileInfo?.fileSize,
           fileType: fileInfo?.fileType,
-          fileKey: tokenData.file_key,
+          fileKey: tokenData!.file_key,
         },
         tokenInfo: {
-          expiresAt: tokenData.expires_at,
-          downloadCount: tokenData.download_count,
-          maxDownloads: tokenData.max_downloads,
-          remainingDownloads: tokenData.max_downloads - tokenData.download_count,
+          expiresAt: tokenData!.expires_at,
+          downloadCount: tokenData!.download_count,
+          maxDownloads: tokenData!.max_downloads,
+          remainingDownloads: tokenData!.max_downloads - tokenData!.download_count,
         },
       });
     } else if (action === 'stream') {
