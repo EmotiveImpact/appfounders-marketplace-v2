@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, getServerUser } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API route to get user profile
  */

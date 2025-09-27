@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API route to check authentication status
  * Returns user data if authenticated, 401 if not

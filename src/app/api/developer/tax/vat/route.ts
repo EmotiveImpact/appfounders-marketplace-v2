@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { neonClient } from '@/lib/database/neon-client';
 
+export const dynamic = 'force-dynamic';
+
 // VAT rates by country (simplified - in production, use a comprehensive tax service)
 const VAT_RATES = {
   'AT': 0.20, // Austria

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -8,7 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { SocialLoginButtons } from './social-login-buttons';
 
-export function SignInForm() {
+function SignInFormContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -187,5 +187,24 @@ export function SignInForm() {
       <SocialLoginButtons redirectTo={searchParams?.get('redirect') || '/dashboard'} />
 
     </form>
+  );
+}
+
+export function SignInForm() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-4">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="space-y-3 mt-4">
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SignInFormContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { neonClient } from '@/lib/database/neon-client';
 
 // GET /api/search/filters - Get dynamic filter options based on current search context

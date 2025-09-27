@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Filter, Calendar, User } from 'lucide-react';
@@ -18,7 +18,7 @@ const categories = [
   { label: 'Technology', value: 'technology' },
 ];
 
-export default function BlogPage() {
+function BlogPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -341,5 +341,20 @@ export default function BlogPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600">Loading blog...</p>
+        </div>
+      </div>
+    }>
+      <BlogPageContent />
+    </Suspense>
   );
 }

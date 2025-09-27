@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Download, ArrowRight, Home } from 'lucide-react';
@@ -16,7 +16,7 @@ interface PurchaseDetails {
   downloadUrl?: string;
 }
 
-export default function PurchaseSuccessPage() {
+function PurchaseSuccessContent() {
   const [purchaseDetails, setPurchaseDetails] = useState<PurchaseDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,5 +192,20 @@ export default function PurchaseSuccessPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function PurchaseSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600">Loading purchase details...</p>
+        </div>
+      </div>
+    }>
+      <PurchaseSuccessContent />
+    </Suspense>
   );
 }
