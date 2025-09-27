@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProtectedRoute, USER_ROLES } from '@/lib/auth/route-protection';
 import { neonClient } from '@/lib/database/neon-client';
+import { stripe } from '@/lib/stripe/config';
 
 interface RouteParams {
   params: {
@@ -12,6 +13,13 @@ interface RouteParams {
 export const POST = createProtectedRoute(
   async (req: NextRequest, user: any, { params }: RouteParams) => {
     try {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured' },
+          { status: 500 }
+        );
+      }
+
       const { id: paymentMethodId } = params;
 
       if (!paymentMethodId) {
@@ -37,9 +45,6 @@ export const POST = createProtectedRoute(
       }
 
       const customerId = customerResult[0].stripe_customer_id;
-
-      // Initialize Stripe
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
       // Verify the payment method belongs to this customer
       const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);

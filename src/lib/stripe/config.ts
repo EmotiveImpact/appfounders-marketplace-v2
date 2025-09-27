@@ -1,11 +1,13 @@
 import Stripe from 'stripe';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Server-side Stripe instance
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-  typescript: true,
-});
+// Server-side Stripe instance - only initialize if secret key is available
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+      typescript: true,
+    })
+  : null;
 
 // Client-side Stripe instance
 let stripePromise: any;
@@ -71,6 +73,9 @@ export function validateWebhookSignature(
   secret: string
 ): Stripe.Event {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
     return stripe.webhooks.constructEvent(payload, signature, secret);
   } catch (error: any) {
     throw new Error(`Webhook signature verification failed: ${error.message}`);
@@ -124,6 +129,10 @@ export async function getOrCreateStripeCustomer(
   userId?: string
 ): Promise<Stripe.Customer> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // First, try to find existing customer by email
     const existingCustomers = await stripe.customers.list({
       email,

@@ -40,6 +40,10 @@ export async function createRefund(
   adminId?: string
 ): Promise<{ refund: Stripe.Refund; refundRequest: RefundRequest }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Get payment intent details
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
@@ -114,6 +118,14 @@ export async function createRefund(
  */
 export async function updateRefundStatus(refundId: string): Promise<RefundRequest | null> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Get refund from Stripe
     const refund = await stripe.refunds.retrieve(refundId);
     
@@ -194,6 +206,14 @@ export async function getRefundRequests(
  */
 export async function cancelRefund(refundId: string, adminId: string): Promise<RefundRequest> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Cancel refund in Stripe (only works for pending refunds)
     await stripe.refunds.cancel(refundId);
 
@@ -223,6 +243,10 @@ export async function cancelRefund(refundId: string, adminId: string): Promise<R
  */
 export async function handleDisputeCreated(dispute: Stripe.Dispute): Promise<DisputeCase> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const chargeId = dispute.charge as string;
     
     // Get charge details to find payment intent
@@ -277,6 +301,10 @@ export async function handleDisputeCreated(dispute: Stripe.Dispute): Promise<Dis
  */
 export async function updateDisputeStatus(disputeId: string): Promise<DisputeCase | null> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Get dispute from Stripe
     const dispute = await stripe.disputes.retrieve(disputeId);
     
@@ -360,6 +388,10 @@ export async function submitDisputeEvidence(
   evidence: Stripe.DisputeUpdateParams.Evidence
 ): Promise<Stripe.Dispute> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Submit evidence to Stripe
     const dispute = await stripe.disputes.update(disputeId, {
       evidence,

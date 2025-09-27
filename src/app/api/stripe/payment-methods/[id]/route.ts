@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProtectedRoute, USER_ROLES } from '@/lib/auth/route-protection';
 import { neonClient } from '@/lib/database/neon-client';
+import { stripe } from '@/lib/stripe/config';
 
 interface RouteParams {
   params: {
@@ -12,6 +13,13 @@ interface RouteParams {
 export const DELETE = createProtectedRoute(
   async (req: NextRequest, user: any, { params }: RouteParams) => {
     try {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured' },
+          { status: 500 }
+        );
+      }
+
       const { id: paymentMethodId } = params;
 
       if (!paymentMethodId) {
@@ -38,9 +46,6 @@ export const DELETE = createProtectedRoute(
 
       const customerId = customerResult[0].stripe_customer_id;
 
-      // Initialize Stripe
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
       // Verify the payment method belongs to this customer
       const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
       
@@ -53,7 +58,7 @@ export const DELETE = createProtectedRoute(
 
       // Check if this is the default payment method
       const customer = await stripe.customers.retrieve(customerId);
-      const isDefault = customer.invoice_settings?.default_payment_method === paymentMethodId;
+      const isDefault = (customer as any).invoice_settings?.default_payment_method === paymentMethodId;
 
       if (isDefault) {
         // Get other payment methods to set a new default
@@ -75,7 +80,7 @@ export const DELETE = createProtectedRoute(
           // Clear default payment method if no others exist
           await stripe.customers.update(customerId, {
             invoice_settings: {
-              default_payment_method: null,
+              default_payment_method: undefined,
             },
           });
         }

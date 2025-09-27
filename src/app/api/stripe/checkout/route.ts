@@ -4,6 +4,13 @@ import { getServerUser } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured' },
+        { status: 500 }
+      );
+    }
+
     const { appId, priceId, successUrl, cancelUrl } = await request.json();
 
     // Validate required fields

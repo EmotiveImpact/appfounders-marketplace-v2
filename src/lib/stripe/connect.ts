@@ -31,6 +31,10 @@ export async function createConnectAccount(
   country: string = 'US'
 ): Promise<{ accountId: string; onboardingUrl: string }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Create Stripe Express account
     const account = await stripe.accounts.create({
       type: 'express',
@@ -108,6 +112,14 @@ export async function getConnectedAccount(userId: string): Promise<ConnectedAcco
  */
 export async function updateConnectedAccountStatus(accountId: string): Promise<void> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const account = await stripe.accounts.retrieve(accountId);
     
     await neonClient.sql`
@@ -166,6 +178,10 @@ export async function createSplitPayment(
   customerId?: string
 ): Promise<Stripe.PaymentIntent> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const { platformFee, developerAmount } = calculateCommissionSplit(amount);
 
     // Create payment intent with application fee
@@ -201,6 +217,10 @@ export async function processManualPayout(
   description?: string
 ): Promise<Stripe.Transfer> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const transfer = await stripe.transfers.create({
       amount,
       currency,
@@ -229,6 +249,10 @@ export async function getDeveloperEarnings(userId: string): Promise<{
   salesCount: number;
 }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     // Get connected account
     const connectedAccount = await getConnectedAccount(userId);
     if (!connectedAccount) {
@@ -296,6 +320,10 @@ export async function getPlatformRevenue(): Promise<{
   stripeFees: number;
 }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const result = await neonClient.sql`
       SELECT 
         SUM(amount_cents) as total_revenue,
@@ -327,6 +355,10 @@ export async function createAccountLink(
   type: 'account_onboarding' | 'account_update' = 'account_update'
 ): Promise<string> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${process.env.NEXTAUTH_URL}/dashboard/developer/connect/refresh`,

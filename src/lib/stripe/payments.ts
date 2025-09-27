@@ -32,6 +32,10 @@ export async function createPaymentIntent(
   params: CreatePaymentIntentParams
 ): Promise<{ clientSecret: string; paymentIntentId: string }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const {
       amount,
       currency = STRIPE_CONFIG.currency,
@@ -92,6 +96,10 @@ export async function createCheckoutSession(
   params: CreateCheckoutSessionParams
 ): Promise<{ sessionId: string; url: string }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const {
       priceId,
       amount,
@@ -172,6 +180,10 @@ export async function createCheckoutSession(
  */
 export async function getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     return await stripe.paymentIntents.retrieve(paymentIntentId);
   } catch (error) {
     console.error('Error retrieving payment intent:', error);
@@ -184,6 +196,10 @@ export async function getPaymentIntent(paymentIntentId: string): Promise<Stripe.
  */
 export async function getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     return await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent'],
     });
@@ -202,6 +218,10 @@ export async function createRefund(
   reason?: Stripe.RefundCreateParams.Reason
 ): Promise<Stripe.Refund> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const refundParams: Stripe.RefundCreateParams = {
       payment_intent: paymentIntentId,
     };
@@ -228,6 +248,10 @@ export async function getCustomerPaymentMethods(
   customerId: string
 ): Promise<Stripe.PaymentMethod[]> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const paymentMethods = await stripe.paymentMethods.list({
       customer: customerId,
       type: 'card',
@@ -249,6 +273,10 @@ export async function createSetupIntent(
   userId?: string
 ): Promise<{ clientSecret: string; setupIntentId: string }> {
   try {
+    if (!stripe) {
+      throw new Error('Stripe not configured');
+    }
+
     const customer = await getOrCreateStripeCustomer(customerEmail, customerName, userId);
 
     const setupIntent = await stripe.setupIntents.create({
