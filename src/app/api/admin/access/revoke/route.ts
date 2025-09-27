@@ -47,8 +47,8 @@ export const POST = createProtectedRoute(
           }
 
           // Get purchase information
-          const purchaseQuery = `
-            SELECT 
+          const purchaseResult = await neonClient.sql`
+            SELECT
               p.*,
               a.name as app_name,
               u.name as user_name,
@@ -56,10 +56,8 @@ export const POST = createProtectedRoute(
             FROM purchases p
             JOIN apps a ON p.app_id = a.id
             JOIN users u ON p.user_id = u.id
-            WHERE p.id = $1
+            WHERE p.id = ${purchase_id}
           `;
-
-          const purchaseResult = await neonClient.sql(purchaseQuery, [purchase_id]);
 
           if (purchaseResult.length === 0) {
             return NextResponse.json(
@@ -71,16 +69,18 @@ export const POST = createProtectedRoute(
           const purchase = purchaseResult[0];
 
           // Revoke purchase access
-          await neonClient.sql(
-            'UPDATE purchases SET status = $1, revoked_at = NOW(), revocation_reason = $2 WHERE id = $3',
-            ['revoked', reason, purchase_id]
-          );
+          await neonClient.sql`
+            UPDATE purchases
+            SET status = 'revoked', revoked_at = NOW(), revocation_reason = ${reason}
+            WHERE id = ${purchase_id}
+          `;
 
           // Revoke associated licenses
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE purchase_id = $2',
-            ['revoked', purchase_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = 'revoked', updated_at = NOW()
+            WHERE purchase_id = ${purchase_id}
+          `;
 
           affectedRecords.push(purchase);
           notificationData = {
@@ -100,16 +100,14 @@ export const POST = createProtectedRoute(
           }
 
           // Get user and app information
-          const userAppQuery = `
-            SELECT 
+          const userAppResult = await neonClient.sql`
+            SELECT
               u.name as user_name,
               u.email as user_email,
               a.name as app_name
             FROM users u, apps a
-            WHERE u.id = $1 AND a.id = $2
+            WHERE u.id = ${user_id} AND a.id = ${app_id}
           `;
-
-          const userAppResult = await neonClient.sql(userAppQuery, [user_id, app_id]);
 
           if (userAppResult.length === 0) {
             return NextResponse.json(
@@ -121,22 +119,19 @@ export const POST = createProtectedRoute(
           const userApp = userAppResult[0];
 
           // Revoke all purchases for this user and app
-          const userPurchasesQuery = `
-            UPDATE purchases 
-            SET status = $1, revoked_at = NOW(), revocation_reason = $2 
-            WHERE user_id = $3 AND app_id = $4 AND status != 'revoked'
+          const revokedPurchases = await neonClient.sql`
+            UPDATE purchases
+            SET status = 'revoked', revoked_at = NOW(), revocation_reason = ${reason}
+            WHERE user_id = ${user_id} AND app_id = ${app_id} AND status != 'revoked'
             RETURNING *
           `;
 
-          const revokedPurchases = await neonClient.sql(userPurchasesQuery, [
-            'revoked', reason, user_id, app_id
-          ]);
-
           // Revoke associated licenses
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE user_id = $2 AND app_id = $3',
-            ['revoked', user_id, app_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = 'revoked', updated_at = NOW()
+            WHERE user_id = ${user_id} AND app_id = ${app_id}
+          `;
 
           affectedRecords = revokedPurchases;
           notificationData = {
@@ -156,11 +151,9 @@ export const POST = createProtectedRoute(
           }
 
           // Get user information
-          const userQuery = `
-            SELECT name, email FROM users WHERE id = $1
+          const userResult = await neonClient.sql`
+            SELECT name, email FROM users WHERE id = ${user_id}
           `;
-
-          const userResult = await neonClient.sql(userQuery, [user_id]);
 
           if (userResult.length === 0) {
             return NextResponse.json(
@@ -172,22 +165,19 @@ export const POST = createProtectedRoute(
           const userData = userResult[0];
 
           // Revoke all purchases for this user
-          const allPurchasesQuery = `
-            UPDATE purchases 
-            SET status = $1, revoked_at = NOW(), revocation_reason = $2 
-            WHERE user_id = $3 AND status != 'revoked'
+          const allRevokedPurchases = await neonClient.sql`
+            UPDATE purchases
+            SET status = 'revoked', revoked_at = NOW(), revocation_reason = ${reason}
+            WHERE user_id = ${user_id} AND status != 'revoked'
             RETURNING *
           `;
 
-          const allRevokedPurchases = await neonClient.sql(allPurchasesQuery, [
-            'revoked', reason, user_id
-          ]);
-
           // Revoke all licenses for this user
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE user_id = $2',
-            ['revoked', user_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = 'revoked', updated_at = NOW()
+            WHERE user_id = ${user_id}
+          `;
 
           affectedRecords = allRevokedPurchases;
           notificationData = {
@@ -206,8 +196,8 @@ export const POST = createProtectedRoute(
           }
 
           // Get license information
-          const licenseQuery = `
-            SELECT 
+          const licenseResult = await neonClient.sql`
+            SELECT
               l.*,
               a.name as app_name,
               u.name as user_name,
@@ -215,10 +205,8 @@ export const POST = createProtectedRoute(
             FROM app_licenses l
             JOIN apps a ON l.app_id = a.id
             JOIN users u ON l.user_id = u.id
-            WHERE l.id = $1
+            WHERE l.id = ${license_id}
           `;
-
-          const licenseResult = await neonClient.sql(licenseQuery, [license_id]);
 
           if (licenseResult.length === 0) {
             return NextResponse.json(
@@ -230,10 +218,11 @@ export const POST = createProtectedRoute(
           const licenseData = licenseResult[0];
 
           // Revoke license
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE id = $2',
-            ['revoked', license_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = 'revoked', updated_at = NOW()
+            WHERE id = ${license_id}
+          `;
 
           affectedRecords.push(licenseData);
           notificationData = {
@@ -253,29 +242,28 @@ export const POST = createProtectedRoute(
       }
 
       // Log the revocation activity
-      const activityQuery = `
+      await neonClient.sql`
         INSERT INTO user_activities (
           user_id,
           activity_type,
           activity_data,
           created_at
-        ) VALUES ($1, $2, $3, NOW())
+        ) VALUES (
+          ${user.id},
+          'access_revoked',
+          ${JSON.stringify({
+            revocation_type,
+            reason,
+            affected_records: affectedRecords.length,
+            purchase_id,
+            user_id,
+            app_id,
+            license_id,
+            revoked_by: user.name,
+          })},
+          NOW()
+        )
       `;
-
-      await neonClient.sql(activityQuery, [
-        user.id,
-        'access_revoked',
-        JSON.stringify({
-          revocation_type,
-          reason,
-          affected_records: affectedRecords.length,
-          purchase_id,
-          user_id,
-          app_id,
-          license_id,
-          revoked_by: user.name,
-        }),
-      ]);
 
       // Send notification email to affected user
       if (notify_user && notificationData.user_email) {
@@ -305,13 +293,14 @@ export const POST = createProtectedRoute(
           await sendEmail({
             to: notificationData.user_email,
             subject: emailSubject,
-            template: emailTemplate,
-            data: {
-              ...notificationData,
-              reason,
-              revocation_date: new Date().toLocaleDateString(),
-              support_url: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
-            },
+            html: `
+              <h2>${emailSubject}</h2>
+              <p>Your access has been revoked.</p>
+              <p><strong>Reason:</strong> ${reason}</p>
+              <p><strong>Revocation Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <p>If you believe this is an error, please <a href="${process.env.NEXT_PUBLIC_APP_URL}/support">contact support</a>.</p>
+            `,
+            text: `Your access has been revoked. Reason: ${reason}. Revocation Date: ${new Date().toLocaleDateString()}`
           });
         } catch (emailError) {
           console.error('Failed to send revocation notification email:', emailError);

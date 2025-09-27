@@ -1,8 +1,8 @@
 // Custom hook for tester dashboard functionality
 import { useState, useCallback, useEffect } from 'react';
-import { 
-  getAllBugs, 
-  getBugsByAppId, 
+import {
+  getAllBugs,
+  getBugsByAppId,
   getBugsByTesterId,
   getBugById,
   createBug,
@@ -33,10 +33,26 @@ import {
 
 import { useSession } from 'next-auth/react';
 
+// Extended user type with id
+interface ExtendedUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
 // Helper function to get current user from session
-const getCurrentUser = () => {
+const getCurrentUser = (): ExtendedUser | null => {
   const { data: session } = useSession();
-  return session?.user || null;
+  if (session?.user?.email) {
+    return {
+      id: session.user.email, // Use email as ID for now
+      name: session.user.name || '',
+      email: session.user.email,
+      image: session.user.image
+    };
+  }
+  return null;
 };
 
 // Hook for bug management
@@ -129,7 +145,7 @@ export const useBugs = () => {
       const data = await createBug(
         bugData,
         currentUser.id,
-        currentUser.name,
+        currentUser.name || 'Anonymous',
         appName
       );
       
@@ -326,7 +342,7 @@ export const useTestCases = () => {
       const data = await createTestExecution(
         executionData,
         currentUser.id,
-        currentUser.name
+        currentUser.name || 'Anonymous'
       );
       
       // Update local state
@@ -440,19 +456,24 @@ export const useTesterDashboard = () => {
     }
   }, []);
 
-  const createBug = useCallback(async (bugData: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createBugReport = useCallback(async (bugData: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>): Promise<Bug> => {
     try {
-      const newBug = await createBug(
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const newBug: Bug = await createBug(
         bugData,
-        getCurrentUser().id,
-        getCurrentUser().name,
+        currentUser.id,
+        currentUser.name || 'Anonymous',
         ''
       );
-      
+
       // Update local state
       setBugs(prevBugs => [...prevBugs, newBug]);
       setSelectedBug(newBug);
-      
+
       return newBug;
     } catch (error) {
       throw new Error('Failed to create bug');
@@ -461,7 +482,15 @@ export const useTesterDashboard = () => {
 
   const updateBug = useCallback(async (id: string, bugData: Partial<Bug>) => {
     try {
-      const updatedBug = await updateBugStatus(id, bugData.status, bugData.assigneeId, bugData.assigneeName);
+      const assignedToId = typeof bugData.assignedTo === 'string' ? bugData.assignedTo : bugData.assignedTo?.id || '';
+      const assignedToName = typeof bugData.assignedTo === 'string' ? bugData.assignedTo : bugData.assignedTo?.name || '';
+
+      const updatedBug = await updateBugStatus(
+        id,
+        bugData.status || 'open',
+        assignedToId,
+        assignedToName
+      );
       
       if (updatedBug) {
         // Update local state
@@ -509,14 +538,26 @@ export const useTesterDashboard = () => {
     }
   }, []);
 
-  const createTestCase = useCallback(async (testCaseData: Omit<TestCase, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createNewTestCase = useCallback(async (testCaseData: Omit<TestCase, 'id' | 'createdAt' | 'updatedAt'>): Promise<TestCase> => {
     try {
-      const newTestCase = await createTestCase(testCaseData);
-      
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const newTestCase: TestCase = await createTestCase(
+        testCaseData,
+        currentUser.id,
+        currentUser.name || 'Anonymous',
+        '',
+        '',
+        ''
+      );
+
       // Update local state
       setTestCases(prevTestCases => [...prevTestCases, newTestCase]);
       setSelectedTestCase(newTestCase);
-      
+
       return newTestCase;
     } catch (error) {
       throw new Error('Failed to create test case');
@@ -525,7 +566,7 @@ export const useTesterDashboard = () => {
 
   const updateTestCase = useCallback(async (id: string, testCaseData: Partial<TestCase>) => {
     try {
-      const updatedTestCase = await updateTestCaseStatus(id, testCaseData.status);
+      const updatedTestCase = await updateTestCaseStatus(id, testCaseData.status || 'pending');
       
       if (updatedTestCase) {
         // Update local state
@@ -562,11 +603,11 @@ export const useTesterDashboard = () => {
     try {
       setLoadingExecutions(true);
       setErrorExecutions(null);
-      const execution = await getTestExecutionsByTestCaseId(id);
-      if (execution) {
-        setSelectedExecution(execution);
+      const executions = await getTestExecutionsByTestCaseId(id);
+      if (executions && executions.length > 0) {
+        setSelectedExecution(executions[0]); // Set the first execution as selected
       }
-      return execution;
+      return executions;
     } catch (error) {
       setErrorExecutions(error instanceof Error ? error.message : 'Failed to fetch test execution');
       return null;
@@ -575,39 +616,44 @@ export const useTesterDashboard = () => {
     }
   }, []);
 
-  const createTestExecution = useCallback(async (data: Omit<TestExecution, 'id' | 'executedAt'>) => {
+  const createNewTestExecution = useCallback(async (data: Omit<TestExecution, 'id' | 'executedAt'>): Promise<TestExecution> => {
     try {
-      const newExecution = await createTestExecution(
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const newExecution: TestExecution = await createTestExecution(
         data,
-        getCurrentUser().id,
-        getCurrentUser().name
+        currentUser.id,
+        currentUser.name || 'Anonymous'
       );
-      
+
       // Update local state
       setTestExecutions(prev => [...prev, newExecution]);
       setSelectedExecution(newExecution);
-      
+
       return newExecution;
     } catch (error) {
       throw new Error('Failed to create test execution');
     }
   }, []);
 
-  const updateTestExecution = useCallback(async (id: string, data: Partial<TestExecution>) => {
+  // Note: Test execution updates would need a proper service function
+  const updateTestExecution = useCallback(async (id: string, data: Partial<TestExecution>): Promise<TestExecution | null> => {
     try {
-      const updatedExecution = await updateTestCaseStatus(id, data.status);
-      
-      if (updatedExecution) {
-        // Update local state
-        setTestExecutions(prev => 
-          prev.map(exec => exec.id === id ? updatedExecution : exec)
-        );
-        
-        if (selectedExecution?.id === id) {
-          setSelectedExecution(updatedExecution);
-        }
+      // For now, just update local state since there's no service function
+      const updatedExecution = { ...selectedExecution, ...data } as TestExecution;
+
+      // Update local state
+      setTestExecutions(prev =>
+        prev.map(exec => exec.id === id ? updatedExecution : exec)
+      );
+
+      if (selectedExecution?.id === id) {
+        setSelectedExecution(updatedExecution);
       }
-      
+
       return updatedExecution;
     } catch (error) {
       throw new Error('Failed to update test execution');
@@ -702,9 +748,9 @@ export const useTesterDashboard = () => {
     errorBugs,
     fetchBugs,
     fetchBugById,
-    createBug,
+    createBug: createBugReport,
     updateBug,
-    
+
     // Test case state and methods
     testCases,
     selectedTestCase,
@@ -712,9 +758,9 @@ export const useTesterDashboard = () => {
     errorTestCases,
     fetchTestCases,
     fetchTestCaseById,
-    createTestCase,
+    createTestCase: createNewTestCase,
     updateTestCase,
-    
+
     // Test execution state and methods
     testExecutions,
     selectedExecution,
@@ -722,9 +768,9 @@ export const useTesterDashboard = () => {
     errorExecutions,
     fetchTestExecutions,
     fetchExecutionById,
-    createTestExecution,
+    createTestExecution: createNewTestExecution,
     updateTestExecution,
-    
+
     // Analytics methods
     fetchTestCaseStatistics
   };

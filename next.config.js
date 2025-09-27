@@ -40,6 +40,16 @@ const nextConfig = {
         hostname: '*.cloudfront.net',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+        pathname: '/**',
+      },
     ],
   },
   // Exclude mobile directory from build

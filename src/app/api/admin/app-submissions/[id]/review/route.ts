@@ -31,17 +31,15 @@ export const POST = createProtectedRoute(
       }
 
       // Get the app submission
-      const appQuery = `
-        SELECT 
+      const appResult = await neonClient.sql`
+        SELECT
           a.*,
           u.name as developer_name,
           u.email as developer_email
         FROM apps a
         JOIN users u ON a.developer_id = u.id
-        WHERE a.id = $1
+        WHERE a.id = ${submissionId}
       `;
-
-      const appResult = await neonClient.sql(appQuery, [submissionId]);
 
       if (appResult.length === 0) {
         return NextResponse.json(
@@ -62,47 +60,39 @@ export const POST = createProtectedRoute(
 
       // Update app status
       const newStatus = action === 'approve' ? 'approved' : 'rejected';
-      const updateQuery = `
-        UPDATE apps 
-        SET 
-          status = $1,
+      const updateResult = await neonClient.sql`
+        UPDATE apps
+        SET
+          status = ${newStatus},
           reviewed_at = NOW(),
-          reviewed_by = $2,
-          rejection_reason = $3,
+          reviewed_by = ${user.id},
+          rejection_reason = ${action === 'reject' ? rejection_reason : null},
           updated_at = NOW()
-        WHERE id = $4
+        WHERE id = ${submissionId}
         RETURNING *
       `;
-
-      const updateResult = await neonClient.sql(updateQuery, [
-        newStatus,
-        user.id,
-        action === 'reject' ? rejection_reason : null,
-        submissionId,
-      ]);
 
       const updatedApp = updateResult[0];
 
       // Log the review activity
-      const activityQuery = `
+      await neonClient.sql`
         INSERT INTO user_activities (
           user_id,
           activity_type,
           activity_data,
           created_at
-        ) VALUES ($1, $2, $3, NOW())
+        ) VALUES (
+          ${user.id},
+          'app_review',
+          ${JSON.stringify({
+            app_id: submissionId,
+            app_name: app.name,
+            action,
+            rejection_reason: action === 'reject' ? rejection_reason : null,
+          })},
+          NOW()
+        )
       `;
-
-      await neonClient.sql(activityQuery, [
-        user.id,
-        'app_review',
-        JSON.stringify({
-          app_id: submissionId,
-          app_name: app.name,
-          action,
-          rejection_reason: action === 'reject' ? rejection_reason : null,
-        }),
-      ]);
 
       // Send notification email to developer
       try {
@@ -124,8 +114,15 @@ export const POST = createProtectedRoute(
         await sendEmail({
           to: app.developer_email,
           subject: emailSubject,
-          template: emailTemplate,
-          data: emailData,
+          html: `
+            <h2>${emailSubject}</h2>
+            <p>Dear ${app.developer_name},</p>
+            <p>Your app "${app.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}.</p>
+            ${action === 'reject' ? `<p><strong>Reason:</strong> ${rejection_reason}</p>` : ''}
+            <p>Reviewed by: ${user.name}</p>
+            <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://appfounders.com'}">Visit Marketplace</a></p>
+          `,
+          text: `Your app "${app.name}" has been ${action === 'approve' ? 'approved' : 'rejected'}. ${action === 'reject' ? `Reason: ${rejection_reason}` : ''}`
         });
       } catch (emailError) {
         console.error('Failed to send notification email:', emailError);
@@ -135,15 +132,23 @@ export const POST = createProtectedRoute(
       // If approved, also log developer activity
       if (action === 'approve') {
         try {
-          await neonClient.sql(activityQuery, [
-            app.developer_id,
-            'app_approved',
-            JSON.stringify({
-              app_id: submissionId,
-              app_name: app.name,
-              approved_by: user.name,
-            }),
-          ]);
+          await neonClient.sql`
+            INSERT INTO user_activities (
+              user_id,
+              activity_type,
+              activity_data,
+              created_at
+            ) VALUES (
+              ${app.developer_id},
+              'app_approved',
+              ${JSON.stringify({
+                app_id: submissionId,
+                app_name: app.name,
+                approved_by: user.name,
+              })},
+              NOW()
+            )
+          `;
         } catch (error) {
           console.error('Failed to log developer activity:', error);
         }
@@ -174,8 +179,8 @@ export const GET = createProtectedRoute(
       const submissionId = params.id;
 
       // Get the app submission with review history
-      const appQuery = `
-        SELECT 
+      const appResult = await neonClient.sql`
+        SELECT
           a.*,
           u.name as developer_name,
           u.email as developer_email,
@@ -183,10 +188,8 @@ export const GET = createProtectedRoute(
         FROM apps a
         JOIN users u ON a.developer_id = u.id
         LEFT JOIN users reviewed_by_user ON a.reviewed_by = reviewed_by_user.id
-        WHERE a.id = $1
+        WHERE a.id = ${submissionId}
       `;
-
-      const appResult = await neonClient.sql(appQuery, [submissionId]);
 
       if (appResult.length === 0) {
         return NextResponse.json(
@@ -198,18 +201,16 @@ export const GET = createProtectedRoute(
       const app = appResult[0];
 
       // Get review history from activities
-      const historyQuery = `
-        SELECT 
+      const reviewHistory = await neonClient.sql`
+        SELECT
           ua.*,
           u.name as reviewer_name
         FROM user_activities ua
         JOIN users u ON ua.user_id = u.id
         WHERE ua.activity_type = 'app_review'
-        AND ua.activity_data->>'app_id' = $1
+        AND ua.activity_data->>'app_id' = ${submissionId}
         ORDER BY ua.created_at DESC
       `;
-
-      const reviewHistory = await neonClient.sql(historyQuery, [submissionId]);
 
       return NextResponse.json({
         success: true,

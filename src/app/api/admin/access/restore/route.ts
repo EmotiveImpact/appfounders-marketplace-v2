@@ -83,10 +83,11 @@ export const POST = createProtectedRoute(
           `;
 
           // Restore associated licenses
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE purchase_id = $2 AND status = $3',
-            ['active', purchase_id, 'revoked']
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = 'active', updated_at = NOW()
+            WHERE purchase_id = ${purchase_id} AND status = 'revoked'
+          `;
 
           affectedRecords.push(purchase);
           notificationData = {
@@ -106,8 +107,8 @@ export const POST = createProtectedRoute(
           }
 
           // Get license information
-          const licenseQuery = `
-            SELECT 
+          const licenseResult = await neonClient.sql`
+            SELECT
               l.*,
               a.name as app_name,
               u.name as user_name,
@@ -115,10 +116,8 @@ export const POST = createProtectedRoute(
             FROM app_licenses l
             JOIN apps a ON l.app_id = a.id
             JOIN users u ON l.user_id = u.id
-            WHERE l.id = $1 AND l.status = 'revoked'
+            WHERE l.id = ${license_id} AND l.status = 'revoked'
           `;
-
-          const licenseResult = await neonClient.sql(licenseQuery, [license_id]);
 
           if (licenseResult.length === 0) {
             return NextResponse.json(
@@ -134,10 +133,11 @@ export const POST = createProtectedRoute(
           const newStatus = isExpired ? 'expired' : 'active';
 
           // Restore license
-          await neonClient.sql(
-            'UPDATE app_licenses SET status = $1, updated_at = NOW() WHERE id = $2',
-            [newStatus, license_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = ${newStatus}, updated_at = NOW()
+            WHERE id = ${license_id}
+          `;
 
           affectedRecords.push(licenseData);
           notificationData = {
@@ -159,16 +159,14 @@ export const POST = createProtectedRoute(
           }
 
           // Get user and app information
-          const userAppQuery = `
-            SELECT 
+          const userAppResult = await neonClient.sql`
+            SELECT
               u.name as user_name,
               u.email as user_email,
               a.name as app_name
             FROM users u, apps a
-            WHERE u.id = $1 AND a.id = $2
+            WHERE u.id = ${user_id} AND a.id = ${app_id}
           `;
-
-          const userAppResult = await neonClient.sql(userAppQuery, [user_id, app_id]);
 
           if (userAppResult.length === 0) {
             return NextResponse.json(
@@ -180,28 +178,23 @@ export const POST = createProtectedRoute(
           const userApp = userAppResult[0];
 
           // Restore all revoked purchases for this user and app
-          const userPurchasesQuery = `
-            UPDATE purchases 
-            SET status = $1, revoked_at = NULL, revocation_reason = NULL 
-            WHERE user_id = $2 AND app_id = $3 AND status = 'revoked'
+          const restoredPurchases = await neonClient.sql`
+            UPDATE purchases
+            SET status = 'completed', revoked_at = NULL, revocation_reason = NULL
+            WHERE user_id = ${user_id} AND app_id = ${app_id} AND status = 'revoked'
             RETURNING *
           `;
 
-          const restoredPurchases = await neonClient.sql(userPurchasesQuery, [
-            'completed', user_id, app_id
-          ]);
-
           // Restore associated licenses
-          await neonClient.sql(
-            `UPDATE app_licenses 
-             SET status = CASE 
-               WHEN expires_at IS NOT NULL AND expires_at < NOW() THEN 'expired'
-               ELSE 'active'
-             END,
-             updated_at = NOW() 
-             WHERE user_id = $1 AND app_id = $2 AND status = 'revoked'`,
-            [user_id, app_id]
-          );
+          await neonClient.sql`
+            UPDATE app_licenses
+            SET status = CASE
+              WHEN expires_at IS NOT NULL AND expires_at < NOW() THEN 'expired'
+              ELSE 'active'
+            END,
+            updated_at = NOW()
+            WHERE user_id = ${user_id} AND app_id = ${app_id} AND status = 'revoked'
+          `;
 
           affectedRecords = restoredPurchases;
           notificationData = {
@@ -220,29 +213,28 @@ export const POST = createProtectedRoute(
       }
 
       // Log the restoration activity
-      const activityQuery = `
+      await neonClient.sql`
         INSERT INTO user_activities (
           user_id,
           activity_type,
           activity_data,
           created_at
-        ) VALUES ($1, $2, $3, NOW())
+        ) VALUES (
+          ${user.id},
+          'access_restored',
+          ${JSON.stringify({
+            restoration_type,
+            reason,
+            affected_records: affectedRecords.length,
+            purchase_id,
+            license_id,
+            user_id,
+            app_id,
+            restored_by: user.name,
+          })},
+          NOW()
+        )
       `;
-
-      await neonClient.sql(activityQuery, [
-        user.id,
-        'access_restored',
-        JSON.stringify({
-          restoration_type,
-          reason,
-          affected_records: affectedRecords.length,
-          purchase_id,
-          license_id,
-          user_id,
-          app_id,
-          restored_by: user.name,
-        }),
-      ]);
 
       // Send notification email to affected user
       if (notify_user && notificationData.user_email) {
@@ -268,13 +260,14 @@ export const POST = createProtectedRoute(
           await sendEmail({
             to: notificationData.user_email,
             subject: emailSubject,
-            template: emailTemplate,
-            data: {
-              ...notificationData,
-              reason,
-              restoration_date: new Date().toLocaleDateString(),
-              app_url: `${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${app_id || 'apps'}`,
-            },
+            html: `
+              <h2>${emailSubject}</h2>
+              <p>Your access has been restored.</p>
+              <p><strong>Reason:</strong> ${reason}</p>
+              <p><strong>Restoration Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${app_id || 'apps'}">Visit App</a></p>
+            `,
+            text: `Your access has been restored. Reason: ${reason}. Restoration Date: ${new Date().toLocaleDateString()}`
           });
         } catch (emailError) {
           console.error('Failed to send restoration notification email:', emailError);
