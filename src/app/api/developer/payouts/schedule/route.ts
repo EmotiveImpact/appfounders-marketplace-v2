@@ -6,27 +6,27 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const scheduleResult = await neonClient.query(
       'SELECT * FROM payout_schedules WHERE user_id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
     return NextResponse.json({
-      schedule: scheduleResult.rows[0] || null,
+      schedule: scheduleResult[0] || null,
     });
   } catch (error) {
     console.error('Error fetching payout schedule:', error);
@@ -40,17 +40,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         updated_at = NOW()
       RETURNING *`,
       [
-        session.user.id,
+        (session.user as any).id,
         enabled,
         frequency,
         minimum_amount_cents || 1000,
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Payout schedule updated successfully',
-      schedule: scheduleResult.rows[0],
+      schedule: scheduleResult[0],
     });
   } catch (error) {
     console.error('Error updating payout schedule:', error);
@@ -152,23 +152,23 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     await neonClient.query(
       'UPDATE payout_schedules SET enabled = false WHERE user_id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
     return NextResponse.json({
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
     const schedulesResult = await neonClient.query(schedulesQuery);
     const processedPayouts = [];
 
-    for (const schedule of schedulesResult.rows) {
+    for (const schedule of schedulesResult) {
       try {
         // Check if user has sufficient balance
         const balanceQuery = `
@@ -233,7 +233,7 @@ export async function PUT(request: NextRequest) {
         `;
 
         const balanceResult = await neonClient.query(balanceQuery, [schedule.user_id]);
-        const availableBalance = parseInt(balanceResult.rows[0].available_balance);
+        const availableBalance = parseInt(balanceResult[0].available_balance);
 
         if (availableBalance >= schedule.minimum_amount_cents && 
             schedule.charges_enabled && 

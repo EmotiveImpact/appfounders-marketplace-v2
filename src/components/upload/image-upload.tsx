@@ -377,31 +377,11 @@ export function ImageUpload({
   );
 }
 
-// Simple AvatarUpload component for profile pictures
-interface AvatarUploadProps {
-  onUpload: (files: any[]) => void;
-  currentAvatar?: string;
-}
-
-export function AvatarUpload({ onUpload, currentAvatar }: AvatarUploadProps) {
+// Simple avatar upload component
+export function AvatarUpload({ onUploadComplete }: { onUploadComplete?: (url: string) => void }) {
   return (
-    <div className="flex items-center space-x-4">
-      <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-        {currentAvatar ? (
-          <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-gray-500 text-sm">No Image</span>
-        )}
-      </div>
-      <Button
-        variant="outline"
-        onClick={() => {
-          // Mock upload for now
-          onUpload([{ url: 'https://via.placeholder.com/150' }]);
-        }}
-      >
-        Upload Avatar
-      </Button>
+    <div className="flex items-center justify-center w-20 h-20 bg-gray-200 rounded-full">
+      <span className="text-gray-500 text-sm">Avatar</span>
     </div>
   );
 }

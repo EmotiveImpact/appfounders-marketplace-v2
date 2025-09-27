@@ -50,7 +50,7 @@ export const POST = createProtectedRoute(
         WHERE r.id = $1
       `;
 
-      const reviewResult = // await neonClient.sql(reviewQuery, [review_id]);
+      const reviewResult = await neonClient.sql(reviewQuery, [review_id]);
 
       if (reviewResult.length === 0) {
         return NextResponse.json(
@@ -132,7 +132,7 @@ export const POST = createProtectedRoute(
           break;
       }
 
-      const updatedReview = // await neonClient.sql(updateQuery, updateParams);
+      const updatedReview = await neonClient.sql(updateQuery, updateParams);
 
       // Update app rating if review was approved or rejected
       if (action === 'approve' || action === 'reject') {
@@ -149,7 +149,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      // await neonClient.sql(activityQuery, [
+      await neonClient.sql(activityQuery, [
         user.id,
         'review_moderated',
         JSON.stringify({
@@ -174,19 +174,12 @@ export const POST = createProtectedRoute(
 
           const emailTemplate = action === 'reject' ? 'review-rejected' : 'review-flagged';
 
+          // For now, send a simple email without template
           await sendEmail({
             to: review.reviewer_email,
             subject: emailSubject,
-            template: emailTemplate,
-            data: {
-              reviewer_name: review.reviewer_name,
-              app_name: review.app_name,
-              review_content: review.content,
-              reason,
-              moderation_date: new Date().toLocaleDateString(),
-              guidelines_url: `${process.env.NEXT_PUBLIC_APP_URL}/guidelines`,
-              support_url: `${process.env.NEXT_PUBLIC_APP_URL}/support`,
-            },
+            html: `<p>Your review has been moderated.</p>`,
+            text: `Your review has been moderated.`,
           });
         } catch (emailError) {
           console.error('Failed to send moderation notification email:', emailError);
@@ -223,10 +216,10 @@ async function updateAppRating(appId: string) {
       WHERE app_id = $1 AND status = 'approved'
     `;
 
-    const ratingResult = // await neonClient.sql(ratingQuery, [appId]);
+    const ratingResult = await neonClient.sql(ratingQuery, [appId]);
     const { average_rating, review_count } = ratingResult[0];
 
-    // await neonClient.sql(
+    await neonClient.sql(
       'UPDATE apps SET rating_average = $1, rating_count = $2 WHERE id = $3',
       [
         average_rating ? parseFloat(average_rating).toFixed(2) : 0,
@@ -264,7 +257,7 @@ export const GET = createProtectedRoute(
         LIMIT $2 OFFSET $3
       `;
 
-      const reviews = // await neonClient.sql(reviewsQuery, [status, limit, offset]);
+      const reviews = await neonClient.sql(reviewsQuery, [status, limit, offset]);
 
       // Get total count
       const countQuery = `
@@ -273,7 +266,7 @@ export const GET = createProtectedRoute(
         WHERE status = $1
       `;
 
-      const countResult = // await neonClient.sql(countQuery, [status]);
+      const countResult = await neonClient.sql(countQuery, [status]);
       const total = parseInt(countResult[0]?.total || '0');
 
       return NextResponse.json({

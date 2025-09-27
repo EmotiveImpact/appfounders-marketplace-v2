@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
+import { neonClient } from '@/lib/database/neon-client';
 
 export async function GET(
   request: NextRequest,
@@ -16,10 +17,16 @@ export async function GET(
     
     
     // Get the bug by ID
-    const bug = await payload.findByID({
-      collection: 'bugs',
-      id: params.id,
-    });
+    const bugResult = await neonClient.query(
+      'SELECT * FROM bugs WHERE id = $1',
+      [params.id]
+    );
+
+    if (bugResult.length === 0) {
+      return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
+    }
+
+    const bug = bugResult[0];
     
     // Check if user has access to this bug
     if ((session.user as any).role !== 'admin') {
@@ -60,10 +67,16 @@ export async function PUT(
     const body = await request.json();
     
     // Get the existing bug to check permissions
-    const existingBug = await payload.findByID({
-      collection: 'bugs',
-      id: params.id,
-    });
+    const existingBugResult = await neonClient.query(
+      'SELECT * FROM bugs WHERE id = $1',
+      [params.id]
+    );
+
+    if (existingBugResult.length === 0) {
+      return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
+    }
+
+    const existingBug = existingBugResult[0];
     
     // Check if user has permission to update this bug
     if ((session.user as any).role !== 'admin') {
@@ -96,22 +109,32 @@ export async function PUT(
         const filteredBody = updatedData;
         
         // Update bug with filtered data
-        const updatedBug = await payload.update({
-          collection: 'bugs',
-          id: params.id,
-          data: filteredBody,
-        });
+        await neonClient.query(
+          'UPDATE bugs SET title = $1, description = $2, status = $3, priority = $4, updated_at = NOW() WHERE id = $5',
+          [filteredBody.title, filteredBody.description, filteredBody.status, filteredBody.priority, params.id]
+        );
+
+        const updatedBugResult = await neonClient.query(
+          'SELECT * FROM bugs WHERE id = $1',
+          [params.id]
+        );
+        const updatedBug = updatedBugResult[0];
         
         return NextResponse.json(updatedBug);
       }
     }
     
     // For admin or tester (original reporter), update with full body
-    const updatedBug = await payload.update({
-      collection: 'bugs',
-      id: params.id,
-      data: body,
-    });
+    await neonClient.query(
+      'UPDATE bugs SET title = $1, description = $2, status = $3, priority = $4, updated_at = NOW() WHERE id = $5',
+      [body.title, body.description, body.status, body.priority, params.id]
+    );
+
+    const updatedBugResult = await neonClient.query(
+      'SELECT * FROM bugs WHERE id = $1',
+      [params.id]
+    );
+    const updatedBug = updatedBugResult[0];
     
     return NextResponse.json(updatedBug);
   } catch (error: any) {
@@ -138,10 +161,12 @@ export async function DELETE(
     
     
     // Delete the bug
-    const deletedBug = await payload.delete({
-      collection: 'bugs',
-      id: params.id,
-    });
+    await neonClient.query(
+      'DELETE FROM bugs WHERE id = $1',
+      [params.id]
+    );
+
+    const deletedBug = { id: params.id, deleted: true };
     
     return NextResponse.json(deletedBug);
   } catch (error: any) {

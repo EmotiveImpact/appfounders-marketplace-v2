@@ -42,7 +42,7 @@ export const POST = createProtectedRoute(
         WHERE id = $1 AND developer_id = $2
       `;
 
-      const appResult = // await neonClient.sql(appQuery, [appId, user.id]);
+      const appResult = await neonClient.sql(appQuery, [appId, user.id]);
 
       if (appResult.length === 0) {
         return NextResponse.json(
@@ -59,7 +59,7 @@ export const POST = createProtectedRoute(
         WHERE app_id = $1 AND version = $2
       `;
 
-      const existingVersion = // await neonClient.sql(versionCheckQuery, [appId, version]);
+      const existingVersion = await neonClient.sql(versionCheckQuery, [appId, version]);
 
       if (existingVersion.length > 0) {
         return NextResponse.json(
@@ -86,7 +86,7 @@ export const POST = createProtectedRoute(
         RETURNING *
       `;
 
-      const newVersion = // await neonClient.sql(insertVersionQuery, [
+      const newVersion = await neonClient.sql(insertVersionQuery, [
         appId,
         version,
         changelog,
@@ -109,7 +109,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      // await neonClient.sql(activityQuery, [
+      await neonClient.sql(activityQuery, [
         user.id,
         'app_version_submitted',
         JSON.stringify({
@@ -129,26 +129,19 @@ export const POST = createProtectedRoute(
         AND u.notification_preferences->>'app_updates' = 'true'
       `;
 
-      const purchasers = // await neonClient.sql(purchasersQuery, [appId]);
+      const purchasers = await neonClient.sql(purchasersQuery, [appId]);
 
       // Send notification emails to purchasers (async, don't wait)
       if (purchasers.length > 0) {
         Promise.all(
           purchasers.map(async (purchaser) => {
             try {
+              // For now, send a simple email without template
               await sendEmail({
                 to: purchaser.email,
                 subject: `📱 ${app.name} has a new update available!`,
-                template: 'app-update-notification',
-                data: {
-                  user_name: purchaser.name,
-                  app_name: app.name,
-                  version,
-                  changelog,
-                  breaking_changes,
-                  release_notes,
-                  app_url: `${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${appId}`,
-                },
+                html: `<p>A new update is available for ${app.name}.</p>`,
+                text: `A new update is available for ${app.name}.`,
               });
             } catch (error) {
               console.error(`Failed to send update notification to ${purchaser.email}:`, error);
@@ -205,7 +198,7 @@ export const GET = createProtectedRoute(
         accessParams.push(user.id);
       }
 
-      const appResult = // await neonClient.sql(accessQuery, accessParams);
+      const appResult = await neonClient.sql(accessQuery, accessParams);
 
       if (appResult.length === 0) {
         return NextResponse.json(
@@ -231,7 +224,7 @@ export const GET = createProtectedRoute(
 
       versionsQuery += ` ORDER BY av.created_at DESC`;
 
-      const versions = // await neonClient.sql(versionsQuery, [appId]);
+      const versions = await neonClient.sql(versionsQuery, [appId]);
 
       return NextResponse.json({
         success: true,

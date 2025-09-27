@@ -35,7 +35,7 @@ export const GET = createProtectedRoute(
         ORDER BY ss.created_at DESC
       `;
 
-      const savedSearches = // await neonClient.sql(query, [user.id]);
+      const savedSearches = await neonClient.sql(query, [user.id]);
 
       // If including alerts, get recent alerts for each search
       if (includeAlerts && savedSearches.length > 0) {
@@ -54,7 +54,7 @@ export const GET = createProtectedRoute(
           LIMIT 50
         `;
 
-        const alerts = // await neonClient.sql(alertsQuery, [searchIds]);
+        const alerts = await neonClient.sql(alertsQuery, [searchIds]);
 
         // Group alerts by saved search
         const alertsBySearch = alerts.reduce((acc: any, alert: any) => {
@@ -116,7 +116,7 @@ export const POST = createProtectedRoute(
         SELECT id FROM saved_searches 
         WHERE user_id = $1 AND name = $2
       `;
-      const existing = // await neonClient.sql(existingQuery, [user.id, name]);
+      const existing = await neonClient.sql(existingQuery, [user.id, name]);
 
       if (existing.length > 0) {
         return NextResponse.json(
@@ -137,7 +137,7 @@ export const POST = createProtectedRoute(
         RETURNING *
       `;
 
-      const result = // await neonClient.sql(insertQuery, [
+      const result = await neonClient.sql(insertQuery, [
         user.id,
         name,
         JSON.stringify(search_criteria),
@@ -236,7 +236,7 @@ async function checkForMatches(savedSearchId: string, criteria: any, userId: str
     )`;
     queryParams.push(savedSearchId);
 
-    const matches = // await neonClient.sql(searchQuery, queryParams);
+    const matches = await neonClient.sql(searchQuery, queryParams);
 
     // Create alerts for new matches
     if (matches.length > 0) {
@@ -249,10 +249,10 @@ async function checkForMatches(savedSearchId: string, criteria: any, userId: str
         VALUES ${alertInserts}
       `;
 
-      // await neonClient.sql(insertAlertsQuery);
+      await neonClient.sql(insertAlertsQuery);
 
       // Update last checked timestamp
-      // await neonClient.sql(
+      await neonClient.sql(
         'UPDATE saved_searches SET last_checked_at = NOW() WHERE id = $1',
         [savedSearchId]
       );

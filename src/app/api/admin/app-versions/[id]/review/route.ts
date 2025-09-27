@@ -45,8 +45,7 @@ export const POST = createProtectedRoute(
         WHERE av.id = $1
       `;
 
-      // Mock response for now
-      const versionResult: any[] = [];
+      const versionResult = await neonClient.query(versionQuery, [versionId]);
 
       if (versionResult.length === 0) {
         return NextResponse.json(
@@ -79,7 +78,7 @@ export const POST = createProtectedRoute(
         RETURNING *
       `;
 
-      const updatedVersion = // await neonClient.sql(updateVersionQuery, [
+      const updatedVersion = await neonClient.sql(updateVersionQuery, [
         newStatus,
         user.id,
         action === 'reject' ? rejection_reason : null,
@@ -99,7 +98,7 @@ export const POST = createProtectedRoute(
           WHERE id = $5
         `;
 
-        // await neonClient.sql(updateAppQuery, [
+        await neonClient.sql(updateAppQuery, [
           version.version,
           version.app_file_url,
           version.screenshots,
@@ -118,7 +117,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      // await neonClient.sql(activityQuery, [
+      await neonClient.sql(activityQuery, [
         user.id,
         'app_version_review',
         JSON.stringify({
@@ -151,11 +150,12 @@ export const POST = createProtectedRoute(
           app_url: `${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${version.app_id}`,
         };
 
+        // For now, send a simple email without template
         await sendEmail({
           to: version.developer_email,
           subject: emailSubject,
-          template: emailTemplate,
-          data: emailData,
+          html: `<p>Your app version has been ${action}ed.</p>`,
+          text: `Your app version has been ${action}ed.`,
         });
       } catch (emailError) {
         console.error('Failed to send notification email:', emailError);
@@ -174,26 +174,19 @@ export const POST = createProtectedRoute(
             AND u.notification_preferences->>'app_updates' = 'true'
           `;
 
-          const purchasers = // await neonClient.sql(purchasersQuery, [version.app_id]);
+          const purchasers = await neonClient.sql(purchasersQuery, [version.app_id]);
 
           // Send update notifications (async, don't wait)
           if (purchasers.length > 0) {
             Promise.all(
               purchasers.map(async (purchaser) => {
                 try {
+                  // For now, send a simple email without template
                   await sendEmail({
                     to: purchaser.email,
                     subject: `📱 ${version.app_name} v${version.version} is now available!`,
-                    template: 'app-update-available',
-                    data: {
-                      user_name: purchaser.name,
-                      app_name: version.app_name,
-                      version: version.version,
-                      changelog: version.changelog,
-                      breaking_changes: version.breaking_changes,
-                      release_notes: version.release_notes,
-                      app_url: `${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${version.app_id}`,
-                    },
+                    html: `<p>A new version of ${version.app_name} is available!</p>`,
+                    text: `A new version of ${version.app_name} is available!`,
                   });
                 } catch (error) {
                   console.error(`Failed to send update notification to ${purchaser.email}:`, error);
@@ -203,7 +196,7 @@ export const POST = createProtectedRoute(
           }
 
           // Log developer activity
-          // await neonClient.sql(activityQuery, [
+          await neonClient.sql(activityQuery, [
             version.developer_id,
             'app_version_approved',
             JSON.stringify({

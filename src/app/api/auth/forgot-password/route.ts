@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (result) {
       // Send password reset email
       const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${result.token}`;
-      await sendPasswordResetEmail(email, result.userName, resetUrl, '1 hour');
+      await sendPasswordResetEmail(email, result.user?.name || 'User', resetUrl, '1 hour');
     }
 
     // Always return success to prevent email enumeration attacks

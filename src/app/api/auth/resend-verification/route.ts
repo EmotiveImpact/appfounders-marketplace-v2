@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     // Get current session
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Resend verification email
-    const result = await resendVerificationEmail(session.user.id);
+    const result = await resendVerificationEmail((session.user as any).id);
 
     if (!result.success) {
       return NextResponse.json(

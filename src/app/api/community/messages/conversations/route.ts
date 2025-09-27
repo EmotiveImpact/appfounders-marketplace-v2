@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (user_id === session.user.id) {
+    if (user_id === (session.user as any).id) {
       return NextResponse.json(
         { error: 'Cannot start conversation with yourself' },
         { status: 400 }
@@ -33,26 +33,26 @@ export async function POST(request: NextRequest) {
       [user_id]
     );
 
-    if (userCheck.rows.length === 0) {
+    if (userCheck.length === 0) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const otherUser = userCheck.rows[0];
+    const otherUser = userCheck[0];
 
     // Check if conversation already exists
     const existingConversation = await neonClient.query(
       `SELECT id FROM conversations 
        WHERE (user1_id = $1 AND user2_id = $2) 
        OR (user1_id = $2 AND user2_id = $1)`,
-      [session.user.id, user_id]
+      [(session.user as any).id, user_id]
     );
 
-    if (existingConversation.rows.length > 0) {
+    if (existingConversation.length > 0) {
       return NextResponse.json({
-        conversation_id: existingConversation.rows[0].id,
+        conversation_id: existingConversation[0].id,
         message: 'Conversation already exists',
         existing: true,
       });
@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
       `INSERT INTO conversations (user1_id, user2_id) 
        VALUES ($1, $2) 
        RETURNING *`,
-      [session.user.id, user_id]
+      [(session.user as any).id, user_id]
     );
 
-    const conversation = conversationResult.rows[0];
+    const conversation = conversationResult[0];
 
     // Send initial message if provided
     if (initial_message && initial_message.trim().length > 0) {
@@ -77,14 +77,14 @@ export async function POST(request: NextRequest) {
         RETURNING *`,
         [
           conversation.id,
-          session.user.id,
+          (session.user as any).id,
           user_id,
           initial_message,
           'text',
         ]
       );
 
-      const message = messageResult.rows[0];
+      const message = messageResult[0];
 
       // Update conversation with first message
       await neonClient.query(
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         user_id, action, details
       ) VALUES ($1, $2, $3)`,
       [
-        session.user.id,
+        (session.user as any).id,
         'conversation_started',
         JSON.stringify({
           conversation_id: conversation.id,
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
 
     // Get users that can be messaged (excluding current user)
     let whereClause = 'WHERE u.id != $1';
-    const params = [session.user.id];
+    const params = [(session.user as any).id];
 
     if (search) {
       whereClause += ' AND (u.name ILIKE $2 OR u.email ILIKE $2)';
@@ -192,8 +192,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: parseInt(countResult.rows[0].count),
-        pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+        total: parseInt(countResult[0].count),
+        pages: Math.ceil(parseInt(countResult[0].count) / limit),
       },
       filters: {
         search,
@@ -230,10 +230,10 @@ export async function DELETE(request: NextRequest) {
     const conversationCheck = await neonClient.query(
       `SELECT id FROM conversations 
        WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)`,
-      [conversationId, session.user.id]
+      [conversationId, (session.user as any).id]
     );
 
-    if (conversationCheck.rows.length === 0) {
+    if (conversationCheck.length === 0) {
       return NextResponse.json(
         { error: 'Conversation not found or access denied' },
         { status: 404 }
@@ -246,7 +246,7 @@ export async function DELETE(request: NextRequest) {
        VALUES ($1, $2, NOW())
        ON CONFLICT (conversation_id, user_id) 
        DO UPDATE SET deleted_at = NOW()`,
-      [conversationId, session.user.id]
+      [conversationId, (session.user as any).id]
     );
 
     return NextResponse.json({

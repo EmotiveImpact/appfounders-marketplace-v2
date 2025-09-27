@@ -192,7 +192,7 @@ export async function updateAppSubmission(
       RETURNING *
     `;
 
-    const result = // await neonClient.sql(query, values);
+    const result = await neonClient.sql(query, values);
     return result[0] as AppSubmission;
   } catch (error) {
     console.error('Error updating app submission:', error);
@@ -413,7 +413,7 @@ export async function reviewSubmission(
          WHERE id = $4 
          RETURNING *`;
 
-    const result = // await neonClient.sql(
+    const result = await neonClient.sql(
       updateQuery,
       [newStatus, decision.notes, decision.reviewer_id, submissionId]
     );
@@ -495,7 +495,7 @@ export async function getDeveloperSubmissions(
       : `SELECT * FROM apps WHERE developer_id = $1 ORDER BY updated_at DESC`;
     
     const params = status ? [developerId, status] : [developerId];
-    const result = // await neonClient.sql(query, params);
+    const result = await neonClient.sql(query, params);
 
     return result as AppSubmission[];
   } catch (error) {

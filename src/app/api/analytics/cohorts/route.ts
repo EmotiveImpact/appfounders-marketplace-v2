@@ -19,23 +19,23 @@ export const GET = createProtectedRoute(
         );
       }
 
-      let cohortData = {};
+      let cohortData: any = {};
 
       switch (analysisType) {
         case 'retention':
-          cohortData = await generateRetentionCohorts(cohortPeriod, developerId);
+          cohortData = await generateRetentionCohorts(cohortPeriod, developerId || undefined);
           break;
         case 'revenue':
-          cohortData = await generateRevenueCohorts(cohortPeriod, developerId);
+          cohortData = await generateRevenueCohorts(cohortPeriod, developerId || undefined);
           break;
         case 'ltv':
-          cohortData = await calculateLifetimeValue(cohortPeriod, developerId);
+          cohortData = await calculateLifetimeValue(cohortPeriod, developerId || undefined);
           break;
         case 'engagement':
-          cohortData = await analyzeEngagementCohorts(cohortPeriod, developerId);
+          cohortData = await analyzeEngagementCohorts(cohortPeriod, developerId || undefined);
           break;
         default:
-          cohortData = await generateRetentionCohorts(cohortPeriod, developerId);
+          cohortData = await generateRetentionCohorts(cohortPeriod, developerId || undefined);
       }
 
       return NextResponse.json({
@@ -55,7 +55,11 @@ export const GET = createProtectedRoute(
       );
     }
   },
-  [USER_ROLES.ADMIN, USER_ROLES.DEVELOPER]
+  {
+    requiredRole: USER_ROLES.DEVELOPER,
+    resourceType: 'analytics',
+    action: 'read',
+  }
 );
 
 // Generate retention cohort analysis
@@ -133,11 +137,11 @@ async function generateRetentionCohorts(period: string, developerId?: string) {
       ORDER BY ct.cohort_period, ct.period_number
     `;
 
-    const cohortData = // await neonClient.sql(cohortQuery, queryParams);
+    const cohortData = await neonClient.sql(cohortQuery, queryParams);
 
     // Transform data into cohort table format
-    const cohortTable = {};
-    const periods = [...new Set(cohortData.map(row => row.period_number))].sort((a, b) => a - b);
+    const cohortTable: any = {};
+    const periods = Array.from(new Set(cohortData.map(row => row.period_number))).sort((a, b) => a - b);
     
     cohortData.forEach(row => {
       const cohortKey = row.cohort_period;
@@ -155,7 +159,7 @@ async function generateRetentionCohorts(period: string, developerId?: string) {
     });
 
     // Calculate average retention rates across all cohorts
-    const avgRetention = {};
+    const avgRetention: any = {};
     periods.forEach(period => {
       const rates = Object.values(cohortTable)
         .map((cohort: any) => cohort.retention_rates[period]?.retention_rate)
@@ -251,10 +255,10 @@ async function generateRevenueCohorts(period: string, developerId?: string) {
       ORDER BY cr.cohort_period, cr.period_number
     `;
 
-    const revenueData = // await neonClient.sql(revenueQuery, queryParams);
+    const revenueData = await neonClient.sql(revenueQuery, queryParams);
 
     // Transform data
-    const revenueCohorts = {};
+    const revenueCohorts: any = {};
     revenueData.forEach(row => {
       const cohortKey = row.cohort_period;
       if (!revenueCohorts[cohortKey]) {
@@ -360,10 +364,10 @@ async function calculateLifetimeValue(period: string, developerId?: string) {
       SELECT * FROM cohort_ltv
     `;
 
-    const ltvData = // await neonClient.sql(ltvQuery, queryParams);
+    const ltvData = await neonClient.sql(ltvQuery, queryParams);
 
     // Calculate overall LTV metrics
-    const overallMetrics = // await neonClient.sql(`
+    const overallMetrics = await neonClient.sql(`
       SELECT 
         COUNT(*) as total_users,
         AVG(total_spent) as avg_ltv,
@@ -457,7 +461,7 @@ async function analyzeEngagementCohorts(period: string, developerId?: string) {
       FROM cohort_engagement
     `;
 
-    const engagementData = // await neonClient.sql(engagementQuery, queryParams);
+    const engagementData = await neonClient.sql(engagementQuery, queryParams);
 
     return {
       engagement_cohorts: engagementData,

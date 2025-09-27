@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     // If tester parameter is provided, get purchases for that tester
     if (tester) {
       // Only allow users to view their own purchases or admins to view any
-      if (tester !== session.user.id && session.user.role !== 'admin') {
+      if (tester !== (session.user as any).id && session.user.role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these purchases' },
           { status: 403 }
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     // If developer parameter is provided, get sales for that developer
     if (developer) {
       // Only allow developers to view their own sales or admins to view any
-      if (developer !== session.user.id && session.user.role !== 'admin') {
+      if (developer !== (session.user as any).id && session.user.role !== 'admin') {
         return NextResponse.json(
           { error: 'You do not have permission to view these sales' },
           { status: 403 }
@@ -62,10 +62,10 @@ export async function GET(req: NextRequest) {
     
     // If no parameters are provided, return based on user role
     if (session.user.role === 'tester') {
-      const purchases = await getUserPurchases(session.user.id);
+      const purchases = await getUserPurchases((session.user as any).id);
       return NextResponse.json(purchases);
     } else if (session.user.role === 'developer') {
-      const sales = await getDeveloperSales(session.user.id);
+      const sales = await getDeveloperSales((session.user as any).id);
       return NextResponse.json(sales);
     } else if (session.user.role === 'admin') {
       // For admins, return all purchases
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Process the purchase
-    const purchase = await processPurchase(appId, session.user.id);
+    const purchase = await processPurchase(appId, (session.user as any).id);
     return NextResponse.json(purchase);
   } catch (error: any) {
     console.error('Error in POST /api/purchases:', error);

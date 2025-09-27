@@ -65,11 +65,11 @@ export async function validateApiKey(
       WHERE ak.key_hash = $1 AND ak.is_active = true
     `, [hashedKey]);
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return { valid: false };
     }
 
-    const keyData = result.rows[0];
+    const keyData = result[0];
 
     // Check if key is expired
     if (keyData.expires_at && new Date(keyData.expires_at) < new Date()) {

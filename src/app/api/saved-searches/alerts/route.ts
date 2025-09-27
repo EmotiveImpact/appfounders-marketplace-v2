@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -31,12 +31,12 @@ export async function GET(request: NextRequest) {
       LIMIT $2 OFFSET $3
     `;
 
-    const result = await neonClient.query(query, [session.user.id, limit, offset]);
+    const result = await neonClient.query(query, [(session.user as any).id, limit, offset]);
 
     // Get total count
     const countResult = await neonClient.query(
       'SELECT COUNT(*) FROM search_alerts WHERE user_id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
     return NextResponse.json({
@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: parseInt(countResult.rows[0].count),
-        pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+        total: parseInt(countResult[0].count),
+        pages: Math.ceil(parseInt(countResult[0].count) / limit),
       },
     });
   } catch (error) {
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -77,10 +77,10 @@ export async function POST(request: NextRequest) {
     // Verify ownership
     const ownershipCheck = await neonClient.query(
       'SELECT id FROM search_alerts WHERE id = $1 AND user_id = $2',
-      [alert_id, session.user.id]
+      [alert_id, (session.user as any).id]
     );
 
-    if (ownershipCheck.rows.length === 0) {
+    if (ownershipCheck.length === 0) {
       return NextResponse.json(
         { error: 'Alert not found or access denied' },
         { status: 404 }
@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
           [alert_id]
         );
 
-        if (alertResult.rows.length > 0) {
-          const alert = alertResult.rows[0];
+        if (alertResult.length > 0) {
+          const alert = alertResult[0];
           
           // Run the search to find new apps
           const searchQuery = `
@@ -144,21 +144,21 @@ export async function POST(request: NextRequest) {
           ]);
 
           // Create notification record
-          if (searchResults.rows.length > 0) {
+          if (searchResults.length > 0) {
             await neonClient.query(
               `INSERT INTO search_alert_notifications (
                 alert_id, user_id, app_ids, notification_type, read
               ) VALUES ($1, $2, $3, 'test', false)`,
               [
                 alert_id,
-                session.user.id,
-                JSON.stringify(searchResults.rows.map(app => app.id)),
+                (session.user as any).id,
+                JSON.stringify(searchResults.map(app => app.id)),
               ]
             );
 
             return NextResponse.json({
               message: 'Test alert sent successfully',
-              results_count: searchResults.rows.length,
+              results_count: searchResults.length,
               results: searchResults.rows,
             });
           } else {
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
 
     const processedAlerts = [];
 
-    for (const alert of alertsToCheck.rows) {
+    for (const alert of alertsToCheck) {
       try {
         // Run the search to find new apps since last check
         const searchQuery = `
@@ -239,7 +239,7 @@ export async function PUT(request: NextRequest) {
           alert.last_triggered || alert.created_at,
         ]);
 
-        if (searchResults.rows.length > 0) {
+        if (searchResults.length > 0) {
           // Create notification record
           await neonClient.query(
             `INSERT INTO search_alert_notifications (
@@ -248,7 +248,7 @@ export async function PUT(request: NextRequest) {
             [
               alert.id,
               alert.user_id,
-              JSON.stringify(searchResults.rows.map(app => app.id)),
+              JSON.stringify(searchResults.map(app => app.id)),
             ]
           );
 
@@ -276,7 +276,7 @@ export async function PUT(request: NextRequest) {
         processedAlerts.push({
           alert_id: alert.id,
           user_email: alert.email,
-          results_count: searchResults.rows.length,
+          results_count: searchResults.length,
         });
 
       } catch (alertError) {

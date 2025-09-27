@@ -33,7 +33,7 @@ export const POST = createProtectedRoute(
         WHERE a.id = $1 AND a.status = 'approved'
       `;
 
-      const appResult = // await neonClient.sql(appQuery, [app_id]);
+      const appResult = await neonClient.sql(appQuery, [app_id]);
 
       if (appResult.length === 0) {
         return NextResponse.json(
@@ -50,7 +50,7 @@ export const POST = createProtectedRoute(
         WHERE user_id = $1 AND app_id = $2 AND status = 'completed'
       `;
 
-      const existingPurchase = // await neonClient.sql(existingPurchaseQuery, [user.id, app_id]);
+      const existingPurchase = await neonClient.sql(existingPurchaseQuery, [user.id, app_id]);
 
       if (existingPurchase.length > 0) {
         return NextResponse.json({
@@ -125,7 +125,7 @@ export const POST = createProtectedRoute(
         RETURNING *
       `;
 
-      const purchase = // await neonClient.sql(purchaseQuery, [
+      const purchase = await neonClient.sql(purchaseQuery, [
         user.id,
         app_id,
         app.developer_id,
@@ -147,7 +147,7 @@ export const POST = createProtectedRoute(
         WHERE id = $2
       `;
 
-      // await neonClient.sql(updateAppQuery, [paymentAmount, app_id]);
+      await neonClient.sql(updateAppQuery, [paymentAmount, app_id]);
 
       // Log user activity
       const activityQuery = `
@@ -159,7 +159,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      // await neonClient.sql(activityQuery, [
+      await neonClient.sql(activityQuery, [
         user.id,
         'app_purchased',
         JSON.stringify({
@@ -171,7 +171,7 @@ export const POST = createProtectedRoute(
       ]);
 
       // Log developer activity
-      // await neonClient.sql(activityQuery, [
+      await neonClient.sql(activityQuery, [
         app.developer_id,
         'app_sold',
         JSON.stringify({
@@ -267,7 +267,7 @@ export const GET = createProtectedRoute(
         WHERE p.user_id = $1 AND p.app_id = $2 AND p.status = 'completed'
       `;
 
-      const purchase = // await neonClient.sql(purchaseQuery, [user.id, appId]);
+      const purchase = await neonClient.sql(purchaseQuery, [user.id, appId]);
 
       if (purchase.length === 0) {
         return NextResponse.json({

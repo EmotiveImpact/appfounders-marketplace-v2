@@ -6,17 +6,17 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate date range
     let dateFilter = '';
-    const params = [session.user.id];
+    const params = [(session.user as any).id];
 
     switch (period) {
       case '7d':
@@ -208,8 +208,8 @@ export async function GET(request: NextRequest) {
       `;
 
       const previousPeriodResult = await neonClient.query(previousPeriodQuery, params);
-      const current = overviewResult.rows[0];
-      const previous = previousPeriodResult.rows[0];
+      const current = overviewResult[0];
+      const previous = previousPeriodResult[0];
 
       growthMetrics = {
         sales_growth: previous.total_sales > 0 
@@ -236,17 +236,17 @@ export async function GET(request: NextRequest) {
       ${period !== 'all' ? dateFilter.replace('p.purchased_at', 'created_at') : ''}
     `;
 
-    const payoutResult = await neonClient.query(payoutQuery, [session.user.id]);
+    const payoutResult = await neonClient.query(payoutQuery, [(session.user as any).id]);
 
     return NextResponse.json({
-      overview: overviewResult.rows[0],
+      overview: overviewResult[0],
       time_series: timeSeriesResult.rows,
       app_breakdown: appRevenueResult.rows,
       category_breakdown: categoryRevenueResult.rows,
       top_customers: topCustomersResult.rows,
-      refund_analytics: refundResult.rows[0],
+      refund_analytics: refundResult[0],
       growth_metrics: growthMetrics,
-      payout_summary: payoutResult.rows[0],
+      payout_summary: payoutResult[0],
       period,
       app_id: appId,
     });

@@ -6,17 +6,17 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     // Build app filter
     let appFilter = '';
-    const params = [session.user.id];
+    const params = [(session.user as any).id];
     if (appId) {
       appFilter = 'AND p.app_id = $2';
       params.push(appId);
@@ -53,15 +53,15 @@ export async function GET(request: NextRequest) {
 
     const historicalResult = await neonClient.query(historicalDataQuery, params);
 
-    if (historicalResult.rows.length < 7) {
+    if (historicalResult.length < 7) {
       return NextResponse.json({
         error: 'Insufficient historical data for forecasting. Need at least 7 days of sales data.',
-        available_days: historicalResult.rows.length,
+        available_days: historicalResult.length,
       }, { status: 400 });
     }
 
     // Calculate trends and patterns
-    const historicalData = historicalResult.rows.map(row => ({
+    const historicalData = historicalResult.map(row => ({
       date: row.date,
       sales: parseInt(row.daily_sales),
       revenue: parseInt(row.daily_revenue),

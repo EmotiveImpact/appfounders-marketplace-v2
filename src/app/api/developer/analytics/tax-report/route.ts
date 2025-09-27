@@ -6,17 +6,17 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -46,16 +46,16 @@ export async function GET(request: NextRequest) {
       WHERE dv.user_id = $1 AND dv.verification_status = 'verified'
     `;
 
-    const verificationResult = await neonClient.query(verificationQuery, [session.user.id]);
+    const verificationResult = await neonClient.query(verificationQuery, [(session.user as any).id]);
 
-    if (verificationResult.rows.length === 0) {
+    if (verificationResult.length === 0) {
       return NextResponse.json(
         { error: 'Developer verification required for tax reporting' },
         { status: 400 }
       );
     }
 
-    const verification = verificationResult.rows[0];
+    const verification = verificationResult[0];
 
     // Annual revenue summary
     const annualSummaryQuery = `
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       AND EXTRACT(YEAR FROM p.purchased_at) = $2
     `;
 
-    const annualSummaryResult = await neonClient.query(annualSummaryQuery, [session.user.id, year]);
+    const annualSummaryResult = await neonClient.query(annualSummaryQuery, [(session.user as any).id, year]);
 
     // Monthly breakdown
     const monthlyBreakdownQuery = `
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       ORDER BY month
     `;
 
-    const monthlyBreakdownResult = await neonClient.query(monthlyBreakdownQuery, [session.user.id, year]);
+    const monthlyBreakdownResult = await neonClient.query(monthlyBreakdownQuery, [(session.user as any).id, year]);
 
     // Revenue by app for tax purposes
     const appRevenueQuery = `
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
       ORDER BY net_revenue DESC
     `;
 
-    const appRevenueResult = await neonClient.query(appRevenueQuery, [session.user.id, year]);
+    const appRevenueResult = await neonClient.query(appRevenueQuery, [(session.user as any).id, year]);
 
     // Refunds for tax purposes
     const refundsQuery = `
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
       AND EXTRACT(YEAR FROM p.purchased_at) = $2
     `;
 
-    const refundsResult = await neonClient.query(refundsQuery, [session.user.id, year]);
+    const refundsResult = await neonClient.query(refundsQuery, [(session.user as any).id, year]);
 
     // Payouts received (for cash basis accounting)
     const payoutsQuery = `
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
       AND EXTRACT(YEAR FROM processed_at) = $2
     `;
 
-    const payoutsResult = await neonClient.query(payoutsQuery, [session.user.id, year]);
+    const payoutsResult = await neonClient.query(payoutsQuery, [(session.user as any).id, year]);
 
     // Quarterly breakdown for 1099 purposes (US)
     const quarterlyBreakdownQuery = `
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
       ORDER BY quarter
     `;
 
-    const quarterlyBreakdownResult = await neonClient.query(quarterlyBreakdownQuery, [session.user.id, year]);
+    const quarterlyBreakdownResult = await neonClient.query(quarterlyBreakdownQuery, [(session.user as any).id, year]);
 
     // Detailed transaction list for record keeping
     const transactionsQuery = `
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
       ORDER BY p.purchased_at ASC
     `;
 
-    const transactionsResult = await neonClient.query(transactionsQuery, [session.user.id, year]);
+    const transactionsResult = await neonClient.query(transactionsQuery, [(session.user as any).id, year]);
 
     const taxReport = {
       report_info: {
@@ -190,12 +190,12 @@ export async function GET(request: NextRequest) {
         developer_info: verification,
         report_type: 'Annual Tax Report',
       },
-      annual_summary: annualSummaryResult.rows[0],
+      annual_summary: annualSummaryResult[0],
       monthly_breakdown: monthlyBreakdownResult.rows,
       quarterly_breakdown: quarterlyBreakdownResult.rows,
       app_revenue: appRevenueResult.rows,
-      refunds: refundsResult.rows[0],
-      payouts: payoutsResult.rows[0],
+      refunds: refundsResult[0],
+      payouts: payoutsResult[0],
       transactions: transactionsResult.rows,
       tax_notes: {
         gross_revenue_note: 'Total amount received from customers before platform fees',
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
         'Payment Intent ID'
       ];
 
-      const csvRows = transactionsResult.rows.map(transaction => [
+      const csvRows = transactionsResult.map(transaction => [
         transaction.purchased_at,
         transaction.id,
         transaction.app_name,
@@ -257,17 +257,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
       `INSERT INTO tax_reports (
         user_id, year, generated_at, email_sent_to, file_size
       ) VALUES ($1, $2, NOW(), $3, $4)`,
-      [session.user.id, year, email_to, csvContent.length]
+      [(session.user as any).id, year, email_to, csvContent.length]
     );
 
     return NextResponse.json({

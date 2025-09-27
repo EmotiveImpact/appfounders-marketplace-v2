@@ -58,11 +58,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result.rows,
+      data: result,
       pagination: {
         page,
         limit,
-        total: result.rows.length,
+        total: result.length,
       },
     });
   } catch (error: any) {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result.rows[0],
+      data: result[0],
       message: 'App submitted successfully',
     });
   } catch (error: any) {

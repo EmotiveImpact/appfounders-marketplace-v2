@@ -119,7 +119,7 @@ export const GET = createProtectedRoute(
 
       params.push(limit, offset);
 
-      const logs = // await neonClient.sql(logsQuery, params);
+      const logs = await neonClient.sql(logsQuery, params);
 
       // Get total count
       const countQuery = `
@@ -128,7 +128,7 @@ export const GET = createProtectedRoute(
         ${whereClause}
       `;
 
-      const countResult = // await neonClient.sql(countQuery, params.slice(0, -2)); // Remove limit and offset
+      const countResult = await neonClient.sql(countQuery, params.slice(0, -2)); // Remove limit and offset
       const total = parseInt(countResult[0]?.total || '0');
 
       return NextResponse.json({

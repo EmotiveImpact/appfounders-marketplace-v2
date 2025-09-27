@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = cookies();
     cookieStore.set('next-auth.session-token', sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: (process.env.NODE_ENV as string) === 'production',
       sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60, // 30 days
       path: '/',
@@ -159,7 +159,7 @@ async function ensureTestUserExists(testUser: typeof TEST_USERS[0]) {
       [testUser.id]
     );
 
-    if (existingUser.rows.length === 0) {
+    if (existingUser.length === 0) {
       // Create test user
       await neonClient.query(
         `INSERT INTO users (

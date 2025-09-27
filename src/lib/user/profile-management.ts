@@ -159,7 +159,7 @@ export async function updateUserProfile(
       RETURNING *
     `;
 
-    const result = // await neonClient.sql(query, values);
+    const result = await neonClient.sql(query, values);
     
     if (result.length === 0) {
       throw new Error('User not found');

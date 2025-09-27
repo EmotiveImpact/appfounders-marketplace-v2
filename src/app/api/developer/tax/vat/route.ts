@@ -40,17 +40,17 @@ const VAT_RATES = {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -81,16 +81,16 @@ export async function GET(request: NextRequest) {
       WHERE dv.user_id = $1 AND dv.verification_status = 'verified'
     `;
 
-    const verificationResult = await neonClient.query(verificationQuery, [session.user.id]);
+    const verificationResult = await neonClient.query(verificationQuery, [(session.user as any).id]);
 
-    if (verificationResult.rows.length === 0) {
+    if (verificationResult.length === 0) {
       return NextResponse.json(
         { error: 'Developer verification required for VAT reporting' },
         { status: 400 }
       );
     }
 
-    const verification = verificationResult.rows[0];
+    const verification = verificationResult[0];
 
     // Build date filter
     let dateFilter = `AND EXTRACT(YEAR FROM p.purchased_at) = ${year}`;
@@ -124,10 +124,10 @@ export async function GET(request: NextRequest) {
       ORDER BY gross_revenue DESC
     `;
 
-    const salesByCountryResult = await neonClient.query(salesByCountryQuery, [session.user.id]);
+    const salesByCountryResult = await neonClient.query(salesByCountryQuery, [(session.user as any).id]);
 
     // Calculate VAT obligations
-    const vatCalculations = salesByCountryResult.rows.map(sale => {
+    const vatCalculations = salesByCountryResult.map(sale => {
       const vatRate = VAT_RATES[sale.customer_country] || 0;
       const grossRevenue = parseInt(sale.gross_revenue);
       const netRevenue = parseInt(sale.net_revenue);
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
       ORDER BY month, customer_country
     `;
 
-    const monthlyBreakdownResult = await neonClient.query(monthlyBreakdownQuery, [session.user.id]);
+    const monthlyBreakdownResult = await neonClient.query(monthlyBreakdownQuery, [(session.user as any).id]);
 
     const vatReport = {
       report_info: {

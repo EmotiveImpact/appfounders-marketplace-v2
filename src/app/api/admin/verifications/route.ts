@@ -67,7 +67,7 @@ export const GET = createProtectedRoute(
 
       params.push(limit, offset);
 
-      const verifications = // await neonClient.sql(verificationsQuery, params);
+      const verifications = await neonClient.sql(verificationsQuery, params);
 
       // Get total count
       const countQuery = `
@@ -76,7 +76,7 @@ export const GET = createProtectedRoute(
         ${whereClause}
       `;
 
-      const countResult = // await neonClient.sql(countQuery, params.slice(0, -2)); // Remove limit and offset
+      const countResult = await neonClient.sql(countQuery, params.slice(0, -2)); // Remove limit and offset
       const total = parseInt(countResult[0]?.total || '0');
 
       // Get status counts
@@ -88,7 +88,7 @@ export const GET = createProtectedRoute(
         GROUP BY verification_status
       `;
 
-      const statusCounts = // await neonClient.sql(statusCountsQuery);
+      const statusCounts = await neonClient.sql(statusCountsQuery);
 
       return NextResponse.json({
         success: true,

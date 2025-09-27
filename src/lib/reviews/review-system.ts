@@ -278,7 +278,7 @@ export async function getAppReviews(
 
     params.push(limit, offset);
 
-    const result = // await neonClient.sql(query, params);
+    const result = await neonClient.sql(query, params);
     const reviews = result as Review[];
 
     // Get developer responses for each review

@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
     queryParams.push(filters.limit, filters.offset);
 
     // Execute search query
-    const searchResults = // await neonClient.sql(searchQuery, queryParams);
+    const searchResults = await neonClient.sql(searchQuery, queryParams);
 
     // Get total count for pagination
     let countQuery = `
@@ -190,7 +190,7 @@ export async function GET(req: NextRequest) {
       countParamIndex++;
     }
 
-    const countResult = // await neonClient.sql(countQuery, countParams);
+    const countResult = await neonClient.sql(countQuery, countParams);
     const total = parseInt(countResult[0]?.total || '0');
 
     // Get search suggestions if query provided
@@ -214,7 +214,7 @@ export async function GET(req: NextRequest) {
         LIMIT 5
       `;
 
-      const suggestionResults = // await neonClient.sql(suggestionQuery, [`%${filters.query}%`]);
+      const suggestionResults = await neonClient.sql(suggestionQuery, [`%${filters.query}%`]);
       suggestions = suggestionResults.map(row => row.suggestion).filter(Boolean);
     }
 
@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
       LIMIT $3
     `;
 
-    const suggestions = // await neonClient.sql(autocompleteQuery, [
+    const suggestions = await neonClient.sql(autocompleteQuery, [
       query.trim(),
       `%${query.trim()}%`,
       limit

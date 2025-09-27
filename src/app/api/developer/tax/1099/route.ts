@@ -6,17 +6,17 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -46,16 +46,16 @@ export async function GET(request: NextRequest) {
       WHERE dv.user_id = $1 AND dv.verification_status = 'verified'
     `;
 
-    const verificationResult = await neonClient.query(verificationQuery, [session.user.id]);
+    const verificationResult = await neonClient.query(verificationQuery, [(session.user as any).id]);
 
-    if (verificationResult.rows.length === 0) {
+    if (verificationResult.length === 0) {
       return NextResponse.json(
         { error: 'Developer verification required for 1099 generation' },
         { status: 400 }
       );
     }
 
-    const verification = verificationResult.rows[0];
+    const verification = verificationResult[0];
 
     // Only generate 1099 for US taxpayers
     if (verification.tax_country !== 'US') {
@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
       AND EXTRACT(YEAR FROM p.purchased_at) = $2
     `;
 
-    const paymentsResult = await neonClient.query(paymentsQuery, [session.user.id, year]);
-    const payments = paymentsResult.rows[0];
+    const paymentsResult = await neonClient.query(paymentsQuery, [(session.user as any).id, year]);
+    const payments = paymentsResult[0];
 
     // Check if 1099 threshold is met ($600 for 1099-NEC)
     const totalPayments = parseInt(payments.total_payments);
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       ORDER BY quarter
     `;
 
-    const quarterlyResult = await neonClient.query(quarterlyQuery, [session.user.id, year]);
+    const quarterlyResult = await neonClient.query(quarterlyQuery, [(session.user as any).id, year]);
 
     // Get backup withholding info (if applicable)
     const backupWithholdingQuery = `
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       AND p.metadata->>'backup_withholding' = 'true'
     `;
 
-    const backupWithholdingResult = await neonClient.query(backupWithholdingQuery, [session.user.id, year]);
+    const backupWithholdingResult = await neonClient.query(backupWithholdingQuery, [(session.user as any).id, year]);
 
     // Generate 1099-NEC data
     const form1099Data = {
@@ -141,11 +141,11 @@ export async function GET(request: NextRequest) {
         name: verification.business_type === 'business' ? verification.business_name : verification.legal_name,
         address: verification.address,
         tin_type: verification.tax_id_type,
-        account_number: session.user.id.substring(0, 8), // Truncated user ID as account number
+        account_number: (session.user as any).id.substring(0, 8), // Truncated user ID as account number
       },
       payment_info: {
         box_1_nonemployee_compensation: totalPayments, // Box 1: Nonemployee compensation
-        box_4_federal_income_tax_withheld: parseInt(backupWithholdingResult.rows[0].backup_withholding), // Box 4: Federal income tax withheld
+        box_4_federal_income_tax_withheld: parseInt(backupWithholdingResult[0].backup_withholding), // Box 4: Federal income tax withheld
         box_5_fishing_boat_proceeds: 0, // Not applicable
         box_6_medical_health_care_payments: 0, // Not applicable
         box_7_payer_made_direct_sales: false, // Not applicable
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
         user_id, document_type, tax_year, amount_cents, generated_at, metadata
       ) VALUES ($1, $2, $3, $4, NOW(), $5)`,
       [
-        session.user.id,
+        (session.user as any).id,
         '1099-NEC',
         year,
         totalPayments,
@@ -198,17 +198,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
         delivery_address, requested_at, status
       ) VALUES ($1, $2, $3, $4, $5, NOW(), $6)`,
       [
-        session.user.id,
+        (session.user as any).id,
         '1099-NEC',
         year,
         delivery_method,

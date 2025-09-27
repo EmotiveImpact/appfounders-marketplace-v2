@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -30,14 +30,14 @@ export async function POST(
       [forumId]
     );
 
-    if (forumCheck.rows.length === 0) {
+    if (forumCheck.length === 0) {
       return NextResponse.json(
         { error: 'Forum not found' },
         { status: 404 }
       );
     }
 
-    if (forumCheck.rows[0].status !== 'active') {
+    if (forumCheck[0].status !== 'active') {
       return NextResponse.json(
         { error: 'Cannot post to inactive forum' },
         { status: 400 }
@@ -51,7 +51,7 @@ export async function POST(
         [parent_id, forumId, 'active']
       );
 
-      if (parentCheck.rows.length === 0) {
+      if (parentCheck.length === 0) {
         return NextResponse.json(
           { error: 'Parent post not found' },
           { status: 404 }
@@ -65,10 +65,10 @@ export async function POST(
         forum_id, author_id, content, parent_id, status
       ) VALUES ($1, $2, $3, $4, $5) 
       RETURNING *`,
-      [forumId, session.user.id, content, parent_id, 'active']
+      [forumId, (session.user as any).id, content, parent_id, 'active']
     );
 
-    const post = postResult.rows[0];
+    const post = postResult[0];
 
     // Update forum reply count and last activity
     await neonClient.query(
@@ -87,7 +87,7 @@ export async function POST(
         user_id, action, details
       ) VALUES ($1, $2, $3)`,
       [
-        session.user.id,
+        (session.user as any).id,
         'forum_post_created',
         JSON.stringify({
           forum_id: forumId,
@@ -113,7 +113,7 @@ export async function POST(
 
     return NextResponse.json({
       message: 'Post created successfully',
-      post: createdPostResult.rows[0],
+      post: createdPostResult[0],
     });
   } catch (error) {
     console.error('Error creating forum post:', error);
@@ -130,7 +130,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -149,21 +149,21 @@ export async function PUT(
       `SELECT fp.*, u.role as user_role 
        FROM forum_posts fp, users u 
        WHERE fp.id = $1 AND u.id = $2`,
-      [post_id, session.user.id]
+      [post_id, (session.user as any).id]
     );
 
-    if (postCheck.rows.length === 0) {
+    if (postCheck.length === 0) {
       return NextResponse.json(
         { error: 'Post not found' },
         { status: 404 }
       );
     }
 
-    const post = postCheck.rows[0];
+    const post = postCheck[0];
     const userRole = post.user_role;
 
     // Check permissions
-    const canEdit = post.author_id === session.user.id || 
+    const canEdit = post.author_id === (session.user as any).id ||
                    ['admin', 'moderator'].includes(userRole);
 
     if (!canEdit) {
@@ -209,7 +209,7 @@ export async function PUT(
 
     return NextResponse.json({
       message: 'Post updated successfully',
-      post: updateResult.rows[0],
+      post: updateResult[0],
     });
   } catch (error) {
     console.error('Error updating forum post:', error);
@@ -226,7 +226,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -245,18 +245,18 @@ export async function DELETE(
       `SELECT fp.author_id, fp.forum_id, u.role 
        FROM forum_posts fp, users u 
        WHERE fp.id = $1 AND u.id = $2`,
-      [postId, session.user.id]
+      [postId, (session.user as any).id]
     );
 
-    if (postCheck.rows.length === 0) {
+    if (postCheck.length === 0) {
       return NextResponse.json(
         { error: 'Post not found' },
         { status: 404 }
       );
     }
 
-    const post = postCheck.rows[0];
-    const canDelete = post.author_id === session.user.id || 
+    const post = postCheck[0];
+    const canDelete = post.author_id === (session.user as any).id ||
                      ['admin', 'moderator'].includes(post.role);
 
     if (!canDelete) {

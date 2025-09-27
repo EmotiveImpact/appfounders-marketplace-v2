@@ -61,14 +61,14 @@ export async function GET(request: NextRequest) {
 
       const developerResult = await neonClient.query(developerQuery, [developerId]);
 
-      if (developerResult.rows.length === 0) {
+      if (developerResult.length === 0) {
         return NextResponse.json(
           { error: 'Developer not found' },
           { status: 404 }
         );
       }
 
-      const developer = developerResult.rows[0];
+      const developer = developerResult[0];
 
       // Get developer's apps
       const appsQuery = `
@@ -221,8 +221,8 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: parseInt(countResult.rows[0].count),
-          pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+          total: parseInt(countResult[0].count),
+          pages: Math.ceil(parseInt(countResult[0].count) / limit),
         },
         filters: {
           featured,
@@ -243,17 +243,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -278,10 +278,10 @@ export async function POST(request: NextRequest) {
     // Check if showcase already exists
     const existingShowcase = await neonClient.query(
       'SELECT id FROM developer_showcases WHERE developer_id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (existingShowcase.rows.length > 0) {
+    if (existingShowcase.length > 0) {
       return NextResponse.json(
         { error: 'Developer showcase already exists. Use PUT to update.' },
         { status: 400 }
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *`,
       [
-        session.user.id,
+        (session.user as any).id,
         bio,
         website,
         github_url,
@@ -321,17 +321,17 @@ export async function POST(request: NextRequest) {
         user_id, action, details
       ) VALUES ($1, $2, $3)`,
       [
-        session.user.id,
+        (session.user as any).id,
         'showcase_created',
         JSON.stringify({
-          showcase_id: showcaseResult.rows[0].id,
+          showcase_id: showcaseResult[0].id,
         }),
       ]
     );
 
     return NextResponse.json({
       message: 'Developer showcase created successfully',
-      showcase: showcaseResult.rows[0],
+      showcase: showcaseResult[0],
     });
   } catch (error) {
     console.error('Error creating developer showcase:', error);
@@ -345,17 +345,17 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -460,7 +460,7 @@ export async function PUT(request: NextRequest) {
     }
 
     updates.push(`updated_at = NOW()`);
-    values.push(session.user.id);
+    values.push((session.user as any).id);
 
     const updateQuery = `
       UPDATE developer_showcases 
@@ -471,7 +471,7 @@ export async function PUT(request: NextRequest) {
 
     const updateResult = await neonClient.query(updateQuery, values);
 
-    if (updateResult.rows.length === 0) {
+    if (updateResult.length === 0) {
       return NextResponse.json(
         { error: 'Developer showcase not found' },
         { status: 404 }
@@ -480,7 +480,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Developer showcase updated successfully',
-      showcase: updateResult.rows[0],
+      showcase: updateResult[0],
     });
   } catch (error) {
     console.error('Error updating developer showcase:', error);

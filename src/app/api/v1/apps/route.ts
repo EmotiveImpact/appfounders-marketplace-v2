@@ -239,10 +239,10 @@ export async function GET(request: NextRequest) {
     }
 
     const countResult = await db.query(countQuery, countParams);
-    const total = parseInt(countResult.rows[0].total);
+    const total = parseInt(countResult[0].total);
 
     // Format response
-    const apps = result.rows.map(row => ({
+    const apps = result.map(row => ({
       id: row.id,
       name: row.name,
       description: row.description,
@@ -354,7 +354,7 @@ export async function POST(request: NextRequest) {
       apiKeyResult.user.id,
     ]);
 
-    const newApp = result.rows[0];
+    const newApp = result[0];
 
     return apiResponse({
       app: {

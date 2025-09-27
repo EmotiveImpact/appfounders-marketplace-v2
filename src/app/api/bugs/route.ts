@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
+import { neonClient } from '@/lib/database/neon-client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,20 +44,22 @@ export async function GET(request: NextRequest) {
       }
       
       // Check if user has access to this specific bug
-      const bug = await payload.findByID({
-        collection: 'bugs',
-        id: bugId,
-      });
-      
-      return NextResponse.json(bug);
+      const bugResult = await neonClient.query(
+        'SELECT * FROM bugs WHERE id = $1',
+        [bugId]
+      );
+
+      if (bugResult.length === 0) {
+        return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
+      }
+
+      return NextResponse.json(bugResult[0]);
     }
     
     // Otherwise, return a list of bugs
-    const bugs = await payload.find({
-      collection: 'bugs',
-      where: query,
-      sort: '-createdAt',
-    });
+    const bugs = await neonClient.query(
+      'SELECT * FROM bugs ORDER BY created_at DESC'
+    );
     
     return NextResponse.json(bugs);
   } catch (error: any) {
@@ -84,10 +87,12 @@ export async function POST(request: NextRequest) {
     body.reportedBy = (session.user as any).id;
     
     // Create the bug report
-    const bug = await payload.create({
-      collection: 'bugs',
-      data: body,
-    });
+    const bugResult = await neonClient.query(
+      'INSERT INTO bugs (title, description, status, priority, reported_by, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *',
+      [body.title, body.description, body.status || 'open', body.priority || 'medium', body.reportedBy]
+    );
+
+    const bug = bugResult[0];
     
     return NextResponse.json(bug);
   } catch (error: any) {

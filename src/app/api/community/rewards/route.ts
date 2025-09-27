@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         WHERE user_id = $1
       `;
 
-      const userPointsResult = await neonClient.query(userPointsQuery, [session.user.id]);
+      const userPointsResult = await neonClient.query(userPointsQuery, [(session.user as any).id]);
 
       // Get recent point activities
       let periodFilter = '';
@@ -46,13 +46,13 @@ export async function GET(request: NextRequest) {
       `;
 
       const activitiesResult = await neonClient.query(activitiesQuery, [
-        session.user.id,
+        (session.user as any).id,
         limit,
         offset,
       ]);
 
       return NextResponse.json({
-        user_points: userPointsResult.rows[0],
+        user_points: userPointsResult[0],
         activities: activitiesResult.rows,
         period,
       });
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       `;
 
       const badgesResult = await neonClient.query(badgesQuery, [
-        session.user.id,
+        (session.user as any).id,
         limit,
         offset,
       ]);
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         LIMIT 10
       `;
 
-      const availableBadgesResult = await neonClient.query(availableBadgesQuery, [session.user.id]);
+      const availableBadgesResult = await neonClient.query(availableBadgesQuery, [(session.user as any).id]);
 
       return NextResponse.json({
         earned_badges: badgesResult.rows,
@@ -145,11 +145,11 @@ export async function GET(request: NextRequest) {
         WHERE id = $1
       `;
 
-      const userRankResult = await neonClient.query(userRankQuery, [session.user.id]);
+      const userRankResult = await neonClient.query(userRankQuery, [(session.user as any).id]);
 
       return NextResponse.json({
         leaderboard: leaderboardResult.rows,
-        user_rank: userRankResult.rows[0] || { rank: null, total_points: 0 },
+        user_rank: userRankResult[0] || { rank: null, total_points: 0 },
         period,
       });
     } else {
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
           (SELECT COUNT(*) FROM user_points WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days') as monthly_activities
       `;
 
-      const overviewResult = await neonClient.query(overviewQuery, [session.user.id]);
+      const overviewResult = await neonClient.query(overviewQuery, [(session.user as any).id]);
 
       // Get recent badges
       const recentBadgesQuery = `
@@ -179,10 +179,10 @@ export async function GET(request: NextRequest) {
         LIMIT 5
       `;
 
-      const recentBadgesResult = await neonClient.query(recentBadgesQuery, [session.user.id]);
+      const recentBadgesResult = await neonClient.query(recentBadgesQuery, [(session.user as any).id]);
 
       return NextResponse.json({
-        overview: overviewResult.rows[0],
+        overview: overviewResult[0],
         recent_badges: recentBadgesResult.rows,
       });
     }
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -219,15 +219,15 @@ export async function POST(request: NextRequest) {
           user_id, points, activity_type, description, metadata
         ) VALUES ($1, $2, $3, $4, $5)
         RETURNING *`,
-        [session.user.id, points, activity_type, description, JSON.stringify(metadata)]
+        [(session.user as any).id, points, activity_type, description, JSON.stringify(metadata)]
       );
 
       // Check for badge eligibility
-      await checkBadgeEligibility(session.user.id, activity_type, points);
+      await checkBadgeEligibility((session.user as any).id, activity_type, points);
 
       return NextResponse.json({
         message: 'Points awarded successfully',
-        points_awarded: pointsResult.rows[0],
+        points_awarded: pointsResult[0],
       });
     } else if (action === 'redeem_reward') {
       const { reward_id, cost } = body;
@@ -242,10 +242,10 @@ export async function POST(request: NextRequest) {
       // Check if user has enough points
       const userPointsResult = await neonClient.query(
         'SELECT COALESCE(SUM(points), 0) as total_points FROM user_points WHERE user_id = $1',
-        [session.user.id]
+        [(session.user as any).id]
       );
 
-      const totalPoints = parseInt(userPointsResult.rows[0].total_points);
+      const totalPoints = parseInt(userPointsResult[0].total_points);
 
       if (totalPoints < cost) {
         return NextResponse.json(
@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
           user_id, points, activity_type, description, metadata
         ) VALUES ($1, $2, $3, $4, $5)`,
         [
-          session.user.id,
+          (session.user as any).id,
           -cost,
           'reward_redemption',
           `Redeemed reward: ${reward_id}`,
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
         `INSERT INTO reward_redemptions (
           user_id, reward_id, points_cost, status
         ) VALUES ($1, $2, $3, $4)`,
-        [session.user.id, reward_id, cost, 'pending']
+        [(session.user as any).id, reward_id, cost, 'pending']
       );
 
       return NextResponse.json({
@@ -303,7 +303,7 @@ async function checkBadgeEligibility(userId: string, activityType: string, point
       [userId]
     );
 
-    const totalPoints = parseInt(totalPointsResult.rows[0].total_points);
+    const totalPoints = parseInt(totalPointsResult[0].total_points);
 
     // Get activity-specific counts
     const activityCountResult = await neonClient.query(
@@ -311,7 +311,7 @@ async function checkBadgeEligibility(userId: string, activityType: string, point
       [userId, activityType]
     );
 
-    const activityCount = parseInt(activityCountResult.rows[0].count);
+    const activityCount = parseInt(activityCountResult[0].count);
 
     // Check for eligible badges
     const eligibleBadgesQuery = `
@@ -337,7 +337,7 @@ async function checkBadgeEligibility(userId: string, activityType: string, point
     ]);
 
     // Award eligible badges
-    for (const badge of eligibleBadgesResult.rows) {
+    for (const badge of eligibleBadgesResult) {
       await neonClient.query(
         `INSERT INTO user_badges (user_id, badge_id) VALUES ($1, $2)`,
         [userId, badge.id]

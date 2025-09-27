@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
 
-    params.push(limit, offset);
+    params.push(limit.toString(), offset.toString());
 
     const forumsResult = await neonClient.query(forumsQuery, params);
 
@@ -78,13 +78,13 @@ export async function GET(request: NextRequest) {
     const categoriesResult = await neonClient.query(categoriesQuery);
 
     return NextResponse.json({
-      forums: forumsResult.rows,
-      categories: categoriesResult.rows,
+      forums: forumsResult,
+      categories: categoriesResult,
       pagination: {
         page,
         limit,
-        total: parseInt(countResult.rows[0].count),
-        pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+        total: parseInt(countResult[0].count),
+        pages: Math.ceil(parseInt(countResult[0].count) / limit),
       },
       filters: {
         category,
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -150,10 +150,10 @@ export async function POST(request: NextRequest) {
            developer_id = $2 OR 
            id IN (SELECT app_id FROM purchases WHERE user_id = $2 AND status = 'completed')
          )`,
-        [app_id, session.user.id]
+        [app_id, (session.user as any).id]
       );
 
-      if (appCheck.rows.length === 0) {
+      if (appCheck.length === 0) {
         return NextResponse.json(
           { error: 'You do not have access to this app' },
           { status: 403 }
@@ -171,14 +171,14 @@ export async function POST(request: NextRequest) {
         title,
         content,
         category,
-        session.user.id,
+        (session.user as any).id,
         app_id,
         JSON.stringify(tags),
         'active',
       ]
     );
 
-    const forum = forumResult.rows[0];
+    const forum = forumResult[0];
 
     // Log activity
     await neonClient.query(
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
         user_id, action, details
       ) VALUES ($1, $2, $3)`,
       [
-        session.user.id,
+        (session.user as any).id,
         'forum_created',
         JSON.stringify({
           forum_id: forum.id,
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Forum thread created successfully',
-      forum: createdForumResult.rows[0],
+      forum: createdForumResult[0],
     });
   } catch (error) {
     console.error('Error creating forum:', error);
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -252,21 +252,21 @@ export async function PUT(request: NextRequest) {
       `SELECT f.*, u.role as user_role 
        FROM forums f, users u 
        WHERE f.id = $1 AND u.id = $2`,
-      [id, session.user.id]
+      [id, (session.user as any).id]
     );
 
-    if (forumCheck.rows.length === 0) {
+    if (forumCheck.length === 0) {
       return NextResponse.json(
         { error: 'Forum not found' },
         { status: 404 }
       );
     }
 
-    const forum = forumCheck.rows[0];
+    const forum = forumCheck[0];
     const userRole = forum.user_role;
 
     // Check permissions
-    const canEdit = forum.author_id === session.user.id || 
+    const canEdit = forum.author_id === (session.user as any).id ||
                    ['admin', 'moderator'].includes(userRole);
 
     if (!canEdit) {
@@ -327,7 +327,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Forum updated successfully',
-      forum: updateResult.rows[0],
+      forum: updateResult[0],
     });
   } catch (error) {
     console.error('Error updating forum:', error);
@@ -341,7 +341,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -360,18 +360,18 @@ export async function DELETE(request: NextRequest) {
       `SELECT f.author_id, u.role 
        FROM forums f, users u 
        WHERE f.id = $1 AND u.id = $2`,
-      [id, session.user.id]
+      [id, (session.user as any).id]
     );
 
-    if (forumCheck.rows.length === 0) {
+    if (forumCheck.length === 0) {
       return NextResponse.json(
         { error: 'Forum not found' },
         { status: 404 }
       );
     }
 
-    const forum = forumCheck.rows[0];
-    const canDelete = forum.author_id === session.user.id || 
+    const forum = forumCheck[0];
+    const canDelete = forum.author_id === (session.user as any).id ||
                      ['admin', 'moderator'].includes(forum.role);
 
     if (!canDelete) {

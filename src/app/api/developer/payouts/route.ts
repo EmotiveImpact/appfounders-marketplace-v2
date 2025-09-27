@@ -11,17 +11,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     let whereClause = 'WHERE p.user_id = $1';
-    const queryParams = [session.user.id];
+    const queryParams = [(session.user as any).id];
 
     if (status) {
       whereClause += ' AND p.status = $2';
@@ -77,16 +77,16 @@ export async function GET(request: NextRequest) {
       )
     `;
 
-    const earningsResult = await neonClient.query(earningsQuery, [session.user.id]);
+    const earningsResult = await neonClient.query(earningsQuery, [(session.user as any).id]);
 
     return NextResponse.json({
       payouts: result.rows,
-      pending_earnings: earningsResult.rows[0],
+      pending_earnings: earningsResult[0],
       pagination: {
         page,
         limit,
-        total: parseInt(countResult.rows[0].count),
-        pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+        total: parseInt(countResult[0].count),
+        pages: Math.ceil(parseInt(countResult[0].count) / limit),
       },
     });
   } catch (error) {
@@ -101,17 +101,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Verify user is a developer
     const userCheck = await neonClient.query(
       'SELECT role FROM users WHERE id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (userCheck.rows.length === 0 || userCheck.rows[0].role !== 'developer') {
+    if (userCheck.length === 0 || userCheck[0].role !== 'developer') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -128,17 +128,17 @@ export async function POST(request: NextRequest) {
     // Check if user has connected Stripe account
     const connectedAccountResult = await neonClient.query(
       'SELECT * FROM connected_accounts WHERE user_id = $1',
-      [session.user.id]
+      [(session.user as any).id]
     );
 
-    if (connectedAccountResult.rows.length === 0) {
+    if (connectedAccountResult.length === 0) {
       return NextResponse.json(
         { error: 'No connected payment account found. Please connect your Stripe account first.' },
         { status: 400 }
       );
     }
 
-    const connectedAccount = connectedAccountResult.rows[0];
+    const connectedAccount = connectedAccountResult[0];
 
     if (!connectedAccount.charges_enabled || !connectedAccount.payouts_enabled) {
       return NextResponse.json(
@@ -161,8 +161,8 @@ export async function POST(request: NextRequest) {
       )
     `;
 
-    const balanceResult = await neonClient.query(balanceQuery, [session.user.id]);
-    const availableBalance = parseInt(balanceResult.rows[0].available_balance);
+    const balanceResult = await neonClient.query(balanceQuery, [(session.user as any).id]);
+    const availableBalance = parseInt(balanceResult[0].available_balance);
 
     if (amount_cents > availableBalance) {
       return NextResponse.json(
@@ -178,16 +178,16 @@ export async function POST(request: NextRequest) {
       ) VALUES ($1, $2, $3, $4, $5, $6) 
       RETURNING *`,
       [
-        session.user.id,
+        (session.user as any).id,
         amount_cents,
         'usd',
         'pending',
         description || 'Developer payout request',
-        JSON.stringify({ requested_by: session.user.id }),
+        JSON.stringify({ requested_by: (session.user as any).id }),
       ]
     );
 
-    const payout = payoutResult.rows[0];
+    const payout = payoutResult[0];
 
     // Get purchases to include in this payout
     const purchasesQuery = `
@@ -203,13 +203,13 @@ export async function POST(request: NextRequest) {
       ORDER BY created_at ASC
     `;
 
-    const purchasesResult = await neonClient.query(purchasesQuery, [session.user.id]);
+    const purchasesResult = await neonClient.query(purchasesQuery, [(session.user as any).id]);
     
     let remainingAmount = amount_cents;
     const payoutItems = [];
 
     // Create payout items for the purchases
-    for (const purchase of purchasesResult.rows) {
+    for (const purchase of purchasesResult) {
       if (remainingAmount <= 0) break;
 
       const itemAmount = Math.min(remainingAmount, purchase.developer_payout);
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         description: description || 'Developer payout',
         metadata: {
           payout_id: payout.id,
-          user_id: session.user.id,
+          user_id: (session.user as any).id,
         },
       });
 
@@ -279,7 +279,7 @@ export async function POST(request: NextRequest) {
         [
           JSON.stringify({ 
             error: stripeError.message,
-            requested_by: session.user.id 
+            requested_by: (session.user as any).id 
           }),
           payout.id,
         ]

@@ -105,7 +105,7 @@ async function getSimilarApps(appId: string, limit: number) {
     LIMIT $2
   `;
 
-  return // await neonClient.sql(query, [appId, limit]);
+  return await neonClient.sql(query, [appId, limit]);
 }
 
 // Personalized recommendations based on user behavior and preferences
@@ -179,7 +179,7 @@ async function getPersonalizedRecommendations(userId: string, limit: number) {
     LIMIT $2
   `;
 
-  return // await neonClient.sql(query, [userId, limit]);
+  return await neonClient.sql(query, [userId, limit]);
 }
 
 // Trending apps based on recent activity
@@ -229,7 +229,7 @@ async function getTrendingApps(limit: number) {
     LIMIT $1
   `;
 
-  return // await neonClient.sql(query, [limit]);
+  return await neonClient.sql(query, [limit]);
 }
 
 // Category-based recommendations
@@ -269,7 +269,7 @@ async function getCategoryBasedRecommendations(userId: string, limit: number) {
     LIMIT $2
   `;
 
-  return // await neonClient.sql(query, [userId, limit]);
+  return await neonClient.sql(query, [userId, limit]);
 }
 
 // Collaborative filtering recommendations
@@ -322,5 +322,5 @@ async function getCollaborativeRecommendations(userId: string, limit: number) {
     LIMIT $2
   `;
 
-  return // await neonClient.sql(query, [userId, limit]);
+  return await neonClient.sql(query, [userId, limit]);
 }

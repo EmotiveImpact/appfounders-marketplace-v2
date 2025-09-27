@@ -6,7 +6,7 @@ import { neonClient } from '@/lib/database/neon-client';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
       const conversationCheck = await neonClient.query(
         `SELECT id FROM conversations 
          WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)`,
-        [conversationId, session.user.id]
+        [conversationId, (session.user as any).id]
       );
 
-      if (conversationCheck.rows.length === 0) {
+      if (conversationCheck.length === 0) {
         return NextResponse.json(
           { error: 'Conversation not found or access denied' },
           { status: 404 }
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
          WHERE conversation_id = $1 
          AND recipient_id = $2 
          AND read_at IS NULL`,
-        [conversationId, session.user.id]
+        [conversationId, (session.user as any).id]
       );
 
       // Get total count
@@ -74,8 +74,8 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: parseInt(countResult.rows[0].count),
-          pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+          total: parseInt(countResult[0].count),
+          pages: Math.ceil(parseInt(countResult[0].count) / limit),
         },
       });
     } else {
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
       `;
 
       const conversationsResult = await neonClient.query(conversationsQuery, [
-        session.user.id,
+        (session.user as any).id,
         limit,
         offset,
       ]);
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       // Get total count
       const countResult = await neonClient.query(
         'SELECT COUNT(*) FROM conversations WHERE user1_id = $1 OR user2_id = $1',
-        [session.user.id]
+        [(session.user as any).id]
       );
 
       return NextResponse.json({
@@ -135,8 +135,8 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: parseInt(countResult.rows[0].count),
-          pages: Math.ceil(parseInt(countResult.rows[0].count) / limit),
+          total: parseInt(countResult[0].count),
+          pages: Math.ceil(parseInt(countResult[0].count) / limit),
         },
       });
     }
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Verify recipient exists and is not the sender
-      if (recipient_id === session.user.id) {
+      if (recipient_id === (session.user as any).id) {
         return NextResponse.json(
           { error: 'Cannot send message to yourself' },
           { status: 400 }
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
         [recipient_id]
       );
 
-      if (recipientCheck.rows.length === 0) {
+      if (recipientCheck.length === 0) {
         return NextResponse.json(
           { error: 'Recipient not found' },
           { status: 404 }
@@ -207,31 +207,31 @@ export async function POST(request: NextRequest) {
         `SELECT id FROM conversations 
          WHERE (user1_id = $1 AND user2_id = $2) 
          OR (user1_id = $2 AND user2_id = $1)`,
-        [session.user.id, recipient_id]
+        [(session.user as any).id, recipient_id]
       );
 
-      if (existingConversation.rows.length > 0) {
-        finalConversationId = existingConversation.rows[0].id;
+      if (existingConversation.length > 0) {
+        finalConversationId = existingConversation[0].id;
       } else {
         // Create new conversation
         const conversationResult = await neonClient.query(
           `INSERT INTO conversations (user1_id, user2_id) 
            VALUES ($1, $2) 
            RETURNING id`,
-          [session.user.id, recipient_id]
+          [(session.user as any).id, recipient_id]
         );
 
-        finalConversationId = conversationResult.rows[0].id;
+        finalConversationId = conversationResult[0].id;
       }
     } else {
       // Verify user is part of the conversation
       const conversationCheck = await neonClient.query(
         `SELECT user1_id, user2_id FROM conversations 
          WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)`,
-        [finalConversationId, session.user.id]
+        [finalConversationId, (session.user as any).id]
       );
 
-      if (conversationCheck.rows.length === 0) {
+      if (conversationCheck.length === 0) {
         return NextResponse.json(
           { error: 'Conversation not found or access denied' },
           { status: 404 }
@@ -239,8 +239,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Determine recipient_id from conversation
-      const conversation = conversationCheck.rows[0];
-      recipient_id = conversation.user1_id === session.user.id 
+      const conversation = conversationCheck[0];
+      recipient_id = conversation.user1_id === (session.user as any).id 
         ? conversation.user2_id 
         : conversation.user1_id;
     }
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
       RETURNING *`,
       [
         finalConversationId,
-        session.user.id,
+        (session.user as any).id,
         recipient_id,
         content,
         message_type,
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
       ]
     );
 
-    const message = messageResult.rows[0];
+    const message = messageResult[0];
 
     // Update conversation with last message
     await neonClient.query(
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
         user_id, action, details
       ) VALUES ($1, $2, $3)`,
       [
-        session.user.id,
+        (session.user as any).id,
         'message_sent',
         JSON.stringify({
           conversation_id: finalConversationId,
@@ -307,7 +307,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Message sent successfully',
-      message_data: createdMessageResult.rows[0],
+      message_data: createdMessageResult[0],
       conversation_id: finalConversationId,
     });
   } catch (error) {
@@ -322,7 +322,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -342,7 +342,7 @@ export async function PUT(request: NextRequest) {
           `UPDATE messages 
            SET read_at = NOW() 
            WHERE id = $1 AND recipient_id = $2 AND read_at IS NULL`,
-          [message_id, session.user.id]
+          [message_id, (session.user as any).id]
         );
         break;
 
@@ -353,14 +353,14 @@ export async function PUT(request: NextRequest) {
           [message_id]
         );
 
-        if (messageCheck.rows.length === 0) {
+        if (messageCheck.length === 0) {
           return NextResponse.json(
             { error: 'Message not found' },
             { status: 404 }
           );
         }
 
-        if (messageCheck.rows[0].sender_id !== session.user.id) {
+        if (messageCheck[0].sender_id !== (session.user as any).id) {
           return NextResponse.json(
             { error: 'Permission denied' },
             { status: 403 }

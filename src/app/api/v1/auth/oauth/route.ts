@@ -98,14 +98,14 @@ export async function GET(request: NextRequest) {
       WHERE client_id = $1 AND is_active = true
     `, [client_id]);
 
-    if (clientResult.rows.length === 0) {
+    if (clientResult.length === 0) {
       return NextResponse.json({
         error: 'invalid_client',
         error_description: 'Invalid client ID',
       }, { status: 400 });
     }
 
-    const client = clientResult.rows[0];
+    const client = clientResult[0];
 
     // Validate redirect URI
     const allowedUris = client.redirect_uris || [];
@@ -198,14 +198,14 @@ export async function POST(request: NextRequest) {
       WHERE client_id = $1 AND client_secret_hash = $2 AND is_active = true
     `, [client_id, clientHash]);
 
-    if (clientResult.rows.length === 0) {
+    if (clientResult.length === 0) {
       return NextResponse.json({
         error: 'invalid_client',
         error_description: 'Invalid client credentials',
       }, { status: 401 });
     }
 
-    const client = clientResult.rows[0];
+    const client = clientResult[0];
 
     if (grant_type === GrantType.AUTHORIZATION_CODE) {
       // Authorization Code Grant
@@ -223,14 +223,14 @@ export async function POST(request: NextRequest) {
         WHERE code = $1 AND client_id = $2 AND redirect_uri = $3 AND used = false
       `, [code, client_id, redirect_uri]);
 
-      if (codeResult.rows.length === 0) {
+      if (codeResult.length === 0) {
         return NextResponse.json({
           error: 'invalid_grant',
           error_description: 'Invalid authorization code',
         }, { status: 400 });
       }
 
-      const authData = codeResult.rows[0];
+      const authData = codeResult[0];
 
       // Check if code is expired
       if (new Date(authData.expires_at) < new Date()) {
@@ -304,14 +304,14 @@ export async function POST(request: NextRequest) {
         WHERE token = $1 AND client_id = $2 AND revoked = false
       `, [refresh_token, client_id]);
 
-      if (tokenResult.rows.length === 0) {
+      if (tokenResult.length === 0) {
         return NextResponse.json({
           error: 'invalid_grant',
           error_description: 'Invalid refresh token',
         }, { status: 400 });
       }
 
-      const tokenData = tokenResult.rows[0];
+      const tokenData = tokenResult[0];
 
       // Check if token is expired
       if (new Date(tokenData.expires_at) < new Date()) {

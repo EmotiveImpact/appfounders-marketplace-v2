@@ -32,7 +32,7 @@ export async function GET(
     }
 
     // Only allow admins to view other users or users to view themselves
-    if (session.user.role !== 'admin' && session.user.id !== id) {
+    if (session.user.role !== 'admin' && (session.user as any).id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -78,7 +78,7 @@ export async function PATCH(
     }
 
     // Only allow admins to update other users or users to update themselves
-    if (session.user.role !== 'admin' && session.user.id !== id) {
+    if (session.user.role !== 'admin' && (session.user as any).id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }

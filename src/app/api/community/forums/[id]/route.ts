@@ -30,14 +30,14 @@ export async function GET(
 
     const forumResult = await neonClient.query(forumQuery, [forumId]);
 
-    if (forumResult.rows.length === 0) {
+    if (forumResult.length === 0) {
       return NextResponse.json(
         { error: 'Forum not found' },
         { status: 404 }
       );
     }
 
-    const forum = forumResult.rows[0];
+    const forum = forumResult[0];
 
     // Increment view count
     await neonClient.query(
@@ -83,8 +83,8 @@ export async function GET(
     // Check if current user has liked any posts (if authenticated)
     let userLikes = [];
     const session = await getServerSession(authOptions);
-    if (session?.user?.id && postsResult.rows.length > 0) {
-      const postIds = postsResult.rows.map(post => post.id);
+    if (session?.user && (session.user as any).id && postsResult.length > 0) {
+      const postIds = postsResult.map(post => post.id);
       const likesQuery = `
         SELECT post_id 
         FROM forum_post_likes 
@@ -92,15 +92,15 @@ export async function GET(
       `;
 
       const likesResult = await neonClient.query(likesQuery, [
-        session.user.id,
+        (session.user as any).id,
         postIds,
       ]);
 
-      userLikes = likesResult.rows.map(row => row.post_id);
+      userLikes = likesResult.map(row => row.post_id);
     }
 
     // Add user_has_liked flag to posts
-    const postsWithLikes = postsResult.rows.map(post => ({
+    const postsWithLikes = postsResult.map(post => ({
       ...post,
       user_has_liked: userLikes.includes(post.id),
     }));
@@ -114,8 +114,8 @@ export async function GET(
       pagination: {
         page,
         limit,
-        total: parseInt(postsCountResult.rows[0].count),
-        pages: Math.ceil(parseInt(postsCountResult.rows[0].count) / limit),
+        total: parseInt(postsCountResult[0].count),
+        pages: Math.ceil(parseInt(postsCountResult[0].count) / limit),
       },
     });
   } catch (error) {

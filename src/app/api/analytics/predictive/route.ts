@@ -11,7 +11,7 @@ export const GET = createProtectedRoute(
       const horizon = parseInt(searchParams.get('horizon') || '30'); // Days to predict
       const developerId = searchParams.get('developer_id');
 
-      const predictions = {
+      const predictions: any = {
         timestamp: new Date().toISOString(),
         horizon_days: horizon,
       };
@@ -75,7 +75,7 @@ export const GET = createProtectedRoute(
 async function generateSalesForecast(horizonDays: number) {
   try {
     // Get historical sales data
-    const historicalData = // await neonClient.sql(`
+    const historicalData = await neonClient.sql(`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as sales_count,
@@ -96,7 +96,10 @@ async function generateSalesForecast(horizonDays: number) {
     
     // Seasonal patterns (day of week effect)
     const seasonalPatterns = await calculateSeasonalPatterns();
-    
+
+    // Get average order value
+    const avgOrderValue = await getAverageOrderValue();
+
     // Generate predictions
     const predictions = [];
     const lastDate = new Date(historicalData[historicalData.length - 1].date);
@@ -114,7 +117,7 @@ async function generateSalesForecast(horizonDays: number) {
       predictions.push({
         date: futureDate.toISOString().split('T')[0],
         predicted_sales: Math.round(adjustedPrediction),
-        predicted_revenue: Math.round(adjustedPrediction * getAverageOrderValue()),
+        predicted_revenue: Math.round(adjustedPrediction * avgOrderValue),
         confidence: Math.max(0.5, 1 - (i / horizonDays) * 0.5), // Decreasing confidence over time
       });
     }
@@ -139,7 +142,7 @@ async function generateSalesForecast(horizonDays: number) {
 async function predictUserBehavior(horizonDays: number) {
   try {
     // Analyze user engagement patterns
-    const userSegments = // await neonClient.sql(`
+    const userSegments = await neonClient.sql(`
       SELECT 
         u.id,
         u.role,
@@ -182,8 +185,8 @@ async function predictUserBehavior(horizonDays: number) {
       predictions,
       segments: Object.keys(segments).map(key => ({
         name: key,
-        count: segments[key].length,
-        percentage: (segments[key].length / userSegments.length * 100).toFixed(1),
+        count: (segments as any)[key].length,
+        percentage: ((segments as any)[key].length / userSegments.length * 100).toFixed(1),
       })),
       total_users: userSegments.length,
     };
@@ -197,7 +200,7 @@ async function predictUserBehavior(horizonDays: number) {
 async function analyzeMarketTrends(horizonDays: number) {
   try {
     // Analyze category performance trends
-    const categoryTrends = // await neonClient.sql(`
+    const categoryTrends = await neonClient.sql(`
       SELECT 
         a.category,
         DATE_TRUNC('week', p.created_at) as week,
@@ -212,8 +215,8 @@ async function analyzeMarketTrends(horizonDays: number) {
     `);
 
     // Calculate growth rates for each category
-    const categoryGrowth = {};
-    const categories = [...new Set(categoryTrends.map(t => t.category))];
+    const categoryGrowth: any = {};
+    const categories = Array.from(new Set(categoryTrends.map(t => t.category)));
     
     categories.forEach(category => {
       const categoryData = categoryTrends.filter(t => t.category === category);
@@ -229,7 +232,7 @@ async function analyzeMarketTrends(horizonDays: number) {
     });
 
     // Platform trends
-    const platformTrends = // await neonClient.sql(`
+    const platformTrends = await neonClient.sql(`
       SELECT 
         platform,
         COUNT(*) as app_count,
@@ -242,7 +245,7 @@ async function analyzeMarketTrends(horizonDays: number) {
     `);
 
     // Price trend analysis
-    const priceTrends = // await neonClient.sql(`
+    const priceTrends = await neonClient.sql(`
       SELECT 
         DATE_TRUNC('month', created_at) as month,
         AVG(price) as avg_price,
@@ -273,7 +276,7 @@ async function analyzeMarketTrends(horizonDays: number) {
 // User churn prediction
 async function predictUserChurn() {
   try {
-    const users = // await neonClient.sql(`
+    const users = await neonClient.sql(`
       SELECT 
         u.id,
         u.created_at as registration_date,
@@ -359,7 +362,7 @@ function calculateLinearTrend(data: { x: number; y: number }[]) {
 }
 
 async function calculateSeasonalPatterns() {
-  const dayPatterns = // await neonClient.sql(`
+  const dayPatterns = await neonClient.sql(`
     SELECT 
       EXTRACT(DOW FROM created_at) as day_of_week,
       COUNT(*) as sales_count
@@ -369,7 +372,7 @@ async function calculateSeasonalPatterns() {
   `);
 
   const avgSales = dayPatterns.reduce((sum, d) => sum + d.sales_count, 0) / dayPatterns.length;
-  const patterns = {};
+  const patterns: any = {};
   
   dayPatterns.forEach(d => {
     patterns[d.day_of_week] = d.sales_count / avgSales;
@@ -379,7 +382,7 @@ async function calculateSeasonalPatterns() {
 }
 
 async function getAverageOrderValue() {
-  const result = // await neonClient.sql(`
+  const result = await neonClient.sql(`
     SELECT AVG(amount) as avg_order_value
     FROM purchases
     WHERE status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'
@@ -390,7 +393,7 @@ async function getAverageOrderValue() {
 
 async function predictEngagementTrends(horizonDays: number) {
   // Simple engagement prediction based on historical patterns
-  const engagement = // await neonClient.sql(`
+  const engagement = await neonClient.sql(`
     SELECT 
       DATE(created_at) as date,
       COUNT(DISTINCT user_id) as active_users,
@@ -423,7 +426,7 @@ function generateMarketInsights(categoryGrowth: any, platformTrends: any) {
   if (growingCategories.length > 0) {
     insights.push({
       type: 'opportunity',
-      message: `${growingCategories[0][0]} category is showing strong growth (${growingCategories[0][1].toFixed(1)}%)`,
+      message: `${growingCategories[0][0]} category is showing strong growth (${(growingCategories[0][1] as number).toFixed(1)}%)`,
     });
   }
 
@@ -463,7 +466,7 @@ function generateChurnRecommendations(highRisk: any[], mediumRisk: any[]) {
 
 // Developer-specific prediction functions
 async function generateDeveloperSalesForecast(developerId: string, horizonDays: number) {
-  const historicalData = // await neonClient.sql(`
+  const historicalData = await neonClient.sql(`
     SELECT 
       DATE(p.created_at) as date,
       COUNT(*) as sales_count,
@@ -511,7 +514,7 @@ async function generateDeveloperSalesForecast(developerId: string, horizonDays: 
 }
 
 async function predictAppPerformance(developerId: string, horizonDays: number) {
-  const apps = // await neonClient.sql(`
+  const apps = await neonClient.sql(`
     SELECT 
       a.id,
       a.name,
@@ -559,7 +562,7 @@ async function predictAppPerformance(developerId: string, horizonDays: number) {
 }
 
 async function predictDeveloperRevenue(developerId: string, horizonDays: number) {
-  const revenueData = // await neonClient.sql(`
+  const revenueData = await neonClient.sql(`
     SELECT 
       DATE_TRUNC('week', p.created_at) as week,
       SUM(p.developer_payout) as revenue,

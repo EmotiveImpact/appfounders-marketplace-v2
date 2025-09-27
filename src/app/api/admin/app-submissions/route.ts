@@ -71,8 +71,7 @@ export const GET = createProtectedRoute(
 
       params.push(limit, offset);
 
-      // For now, return mock data since we don't have a real database setup
-      const submissions: any[] = [];
+      const submissions = await neonClient.query(submissionsQuery, params);
 
       // Get total count
       const countQuery = `
@@ -81,8 +80,8 @@ export const GET = createProtectedRoute(
         ${whereClause}
       `;
 
-      // For now, return mock data since we don't have a real database setup
-      const total = 0;
+      const countResult = await neonClient.query(countQuery, params.slice(0, -2)); // Remove limit and offset
+      const total = parseInt(countResult[0]?.total || '0');
 
       // Get status counts
       const statusCountsQuery = `
@@ -93,8 +92,7 @@ export const GET = createProtectedRoute(
         GROUP BY status
       `;
 
-      // For now, return mock data since we don't have a real database setup
-      const statusCounts: any[] = [];
+      const statusCounts = await neonClient.query(statusCountsQuery);
 
       return NextResponse.json({
         success: true,

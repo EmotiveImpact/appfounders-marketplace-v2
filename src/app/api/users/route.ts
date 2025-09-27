@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     // Get user profile
     const user = await payload.findByID({
       collection: 'users',
-      id: session.user.id,
+      id: (session.user as any).id,
     });
     
     // Remove sensitive information
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest) {
     // Update user profile
     const updatedUser = await payload.update({
       collection: 'users',
-      id: session.user.id,
+      id: (session.user as any).id,
       data,
     });
     
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     // Update user with new avatar
     const updatedUser = await payload.update({
       collection: 'users',
-      id: session.user.id,
+      id: (session.user as any).id,
       data: {
         avatar: uploadedAvatar.id,
       },
