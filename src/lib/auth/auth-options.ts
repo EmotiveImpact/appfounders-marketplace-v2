@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import AppleProvider from "next-auth/providers/apple";
-import { signInUser, createUser, getUserByEmail } from "@/lib/auth/auth-options";
+// Remove circular import - these functions will be defined below
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
@@ -167,3 +167,24 @@ export const authOptions: AuthOptions = {
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET || "your-fallback-secret-for-development",
 };
+
+// Stub functions for missing exports (to be properly implemented later)
+export async function createUser(userData: any) {
+  // Mock implementation for now
+  return {
+    id: 'mock-user-id',
+    email: userData.email,
+    name: userData.name,
+    role: userData.role,
+  };
+}
+
+export async function signInUser(email: string, password: string) {
+  // Mock implementation for now
+  return null;
+}
+
+export async function getUserByEmail(email: string) {
+  // Mock implementation for now
+  return null;
+}

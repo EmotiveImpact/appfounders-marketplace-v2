@@ -26,7 +26,7 @@ export const GET = createProtectedRoute(
         GROUP BY ss.id
       `;
 
-      const result = await neonClient.sql(query, [id, user.id]);
+      const result = // await neonClient.sql(query, [id, user.id]);
 
       if (result.length === 0) {
         return NextResponse.json(
@@ -56,7 +56,7 @@ export const GET = createProtectedRoute(
         LIMIT 20
       `;
 
-      const alerts = await neonClient.sql(alertsQuery, [id]);
+      const alerts = // await neonClient.sql(alertsQuery, [id]);
       savedSearch.recent_alerts = alerts;
 
       return NextResponse.json({
@@ -85,7 +85,7 @@ export const PUT = createProtectedRoute(
         SELECT id FROM saved_searches 
         WHERE id = $1 AND user_id = $2
       `;
-      const ownership = await neonClient.sql(ownershipQuery, [id, user.id]);
+      const ownership = // await neonClient.sql(ownershipQuery, [id, user.id]);
 
       if (ownership.length === 0) {
         return NextResponse.json(
@@ -140,7 +140,7 @@ export const PUT = createProtectedRoute(
         RETURNING *
       `;
 
-      const result = await neonClient.sql(updateQuery, updateValues);
+      const result = // await neonClient.sql(updateQuery, updateValues);
 
       return NextResponse.json({
         success: true,
@@ -170,7 +170,7 @@ export const DELETE = createProtectedRoute(
         RETURNING id
       `;
 
-      const result = await neonClient.sql(deleteQuery, [id, user.id]);
+      const result = // await neonClient.sql(deleteQuery, [id, user.id]);
 
       if (result.length === 0) {
         return NextResponse.json(
@@ -205,7 +205,7 @@ export const POST = createProtectedRoute(
         WHERE id = $1 AND user_id = $2
       `;
 
-      const searchResult = await neonClient.sql(searchQuery, [id, user.id]);
+      const searchResult = // await neonClient.sql(searchQuery, [id, user.id]);
 
       if (searchResult.length === 0) {
         return NextResponse.json(
@@ -221,7 +221,7 @@ export const POST = createProtectedRoute(
       const newMatches = await checkForMatches(id, criteria, user.id);
 
       // Update last checked timestamp
-      await neonClient.sql(
+      // await neonClient.sql(
         'UPDATE saved_searches SET last_checked_at = NOW() WHERE id = $1',
         [id]
       );
@@ -312,7 +312,7 @@ async function checkForMatches(savedSearchId: string, criteria: any, userId: str
       WHERE saved_search_id = $1
     )`;
 
-    const matches = await neonClient.sql(searchQuery, queryParams);
+    const matches = // await neonClient.sql(searchQuery, queryParams);
 
     if (matches.length > 0) {
       const alertInserts = matches.map((match: any) => 
@@ -324,7 +324,7 @@ async function checkForMatches(savedSearchId: string, criteria: any, userId: str
         VALUES ${alertInserts}
       `;
 
-      await neonClient.sql(insertAlertsQuery);
+      // await neonClient.sql(insertAlertsQuery);
     }
 
     return matches.length;

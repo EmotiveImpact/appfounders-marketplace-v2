@@ -101,7 +101,7 @@ class WebSocketServer {
         }
 
         // Get user details from database
-        const userQuery = await neonClient.sql(
+        const userQuery = // await neonClient.sql(
           'SELECT id, email, role, name FROM users WHERE id = $1',
           [decoded.sub]
         );
@@ -310,7 +310,7 @@ class WebSocketServer {
   private async getUserAnalytics(userId: string, timeframe = '24h') {
     const timeInterval = this.getTimeInterval(timeframe);
     
-    const query = await neonClient.sql(`
+    const query = // await neonClient.sql(`
       SELECT 
         COUNT(DISTINCT ual.id) as activity_count,
         COUNT(DISTINCT p.id) as purchase_count
@@ -323,7 +323,7 @@ class WebSocketServer {
   }
 
   private async getActiveDevelopers() {
-    return await neonClient.sql(`
+    return // await neonClient.sql(`
       SELECT DISTINCT u.id
       FROM users u
       JOIN apps a ON u.id = a.developer_id

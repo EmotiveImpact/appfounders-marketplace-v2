@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       WHERE l.license_key = $1 AND l.app_id = $2
     `;
 
-    const licenseResult = await neonClient.sql(licenseQuery, [license_key, app_id]);
+    const licenseResult = // await neonClient.sql(licenseQuery, [license_key, app_id]);
 
     if (licenseResult.length === 0) {
       return NextResponse.json({
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     // Check if license has expired
     if (license.expires_at && new Date(license.expires_at) < new Date()) {
       // Update license status to expired
-      await neonClient.sql(
+      // await neonClient.sql(
         'UPDATE app_licenses SET status = $1 WHERE id = $2',
         ['expired', license.id]
       );
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
     `;
 
-    await neonClient.sql(validationQuery, [
+    // await neonClient.sql(validationQuery, [
       license.id,
       app_id,
       license.user_id,
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Update last validated timestamp
-    await neonClient.sql(
+    // await neonClient.sql(
       'UPDATE app_licenses SET last_validated_at = NOW() WHERE id = $1',
       [license.id]
     );
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     // Log failed validation attempt
     try {
       const { license_key, app_id } = await req.json();
-      await neonClient.sql(
+      // await neonClient.sql(
         `INSERT INTO license_validations (
           license_id, app_id, validation_result, error_message, validated_at
         ) VALUES (NULL, $1, $2, $3, NOW())`,
@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
       LIMIT 50
     `;
 
-    const history = await neonClient.sql(historyQuery, [licenseKey, appId]);
+    const history = // await neonClient.sql(historyQuery, [licenseKey, appId]);
 
     return NextResponse.json({
       success: true,

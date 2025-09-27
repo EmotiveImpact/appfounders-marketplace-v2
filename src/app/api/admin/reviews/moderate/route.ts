@@ -50,7 +50,7 @@ export const POST = createProtectedRoute(
         WHERE r.id = $1
       `;
 
-      const reviewResult = await neonClient.sql(reviewQuery, [review_id]);
+      const reviewResult = // await neonClient.sql(reviewQuery, [review_id]);
 
       if (reviewResult.length === 0) {
         return NextResponse.json(
@@ -132,7 +132,7 @@ export const POST = createProtectedRoute(
           break;
       }
 
-      const updatedReview = await neonClient.sql(updateQuery, updateParams);
+      const updatedReview = // await neonClient.sql(updateQuery, updateParams);
 
       // Update app rating if review was approved or rejected
       if (action === 'approve' || action === 'reject') {
@@ -149,7 +149,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      await neonClient.sql(activityQuery, [
+      // await neonClient.sql(activityQuery, [
         user.id,
         'review_moderated',
         JSON.stringify({
@@ -223,10 +223,10 @@ async function updateAppRating(appId: string) {
       WHERE app_id = $1 AND status = 'approved'
     `;
 
-    const ratingResult = await neonClient.sql(ratingQuery, [appId]);
+    const ratingResult = // await neonClient.sql(ratingQuery, [appId]);
     const { average_rating, review_count } = ratingResult[0];
 
-    await neonClient.sql(
+    // await neonClient.sql(
       'UPDATE apps SET rating_average = $1, rating_count = $2 WHERE id = $3',
       [
         average_rating ? parseFloat(average_rating).toFixed(2) : 0,
@@ -264,7 +264,7 @@ export const GET = createProtectedRoute(
         LIMIT $2 OFFSET $3
       `;
 
-      const reviews = await neonClient.sql(reviewsQuery, [status, limit, offset]);
+      const reviews = // await neonClient.sql(reviewsQuery, [status, limit, offset]);
 
       // Get total count
       const countQuery = `
@@ -273,7 +273,7 @@ export const GET = createProtectedRoute(
         WHERE status = $1
       `;
 
-      const countResult = await neonClient.sql(countQuery, [status]);
+      const countResult = // await neonClient.sql(countQuery, [status]);
       const total = parseInt(countResult[0]?.total || '0');
 
       return NextResponse.json({

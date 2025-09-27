@@ -133,7 +133,7 @@ async function generateRetentionCohorts(period: string, developerId?: string) {
       ORDER BY ct.cohort_period, ct.period_number
     `;
 
-    const cohortData = await neonClient.sql(cohortQuery, queryParams);
+    const cohortData = // await neonClient.sql(cohortQuery, queryParams);
 
     // Transform data into cohort table format
     const cohortTable = {};
@@ -251,7 +251,7 @@ async function generateRevenueCohorts(period: string, developerId?: string) {
       ORDER BY cr.cohort_period, cr.period_number
     `;
 
-    const revenueData = await neonClient.sql(revenueQuery, queryParams);
+    const revenueData = // await neonClient.sql(revenueQuery, queryParams);
 
     // Transform data
     const revenueCohorts = {};
@@ -360,10 +360,10 @@ async function calculateLifetimeValue(period: string, developerId?: string) {
       SELECT * FROM cohort_ltv
     `;
 
-    const ltvData = await neonClient.sql(ltvQuery, queryParams);
+    const ltvData = // await neonClient.sql(ltvQuery, queryParams);
 
     // Calculate overall LTV metrics
-    const overallMetrics = await neonClient.sql(`
+    const overallMetrics = // await neonClient.sql(`
       SELECT 
         COUNT(*) as total_users,
         AVG(total_spent) as avg_ltv,
@@ -457,7 +457,7 @@ async function analyzeEngagementCohorts(period: string, developerId?: string) {
       FROM cohort_engagement
     `;
 
-    const engagementData = await neonClient.sql(engagementQuery, queryParams);
+    const engagementData = // await neonClient.sql(engagementQuery, queryParams);
 
     return {
       engagement_cohorts: engagementData,

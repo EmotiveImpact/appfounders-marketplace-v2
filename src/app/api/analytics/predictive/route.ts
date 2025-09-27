@@ -75,7 +75,7 @@ export const GET = createProtectedRoute(
 async function generateSalesForecast(horizonDays: number) {
   try {
     // Get historical sales data
-    const historicalData = await neonClient.sql(`
+    const historicalData = // await neonClient.sql(`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as sales_count,
@@ -139,7 +139,7 @@ async function generateSalesForecast(horizonDays: number) {
 async function predictUserBehavior(horizonDays: number) {
   try {
     // Analyze user engagement patterns
-    const userSegments = await neonClient.sql(`
+    const userSegments = // await neonClient.sql(`
       SELECT 
         u.id,
         u.role,
@@ -197,7 +197,7 @@ async function predictUserBehavior(horizonDays: number) {
 async function analyzeMarketTrends(horizonDays: number) {
   try {
     // Analyze category performance trends
-    const categoryTrends = await neonClient.sql(`
+    const categoryTrends = // await neonClient.sql(`
       SELECT 
         a.category,
         DATE_TRUNC('week', p.created_at) as week,
@@ -229,7 +229,7 @@ async function analyzeMarketTrends(horizonDays: number) {
     });
 
     // Platform trends
-    const platformTrends = await neonClient.sql(`
+    const platformTrends = // await neonClient.sql(`
       SELECT 
         platform,
         COUNT(*) as app_count,
@@ -242,7 +242,7 @@ async function analyzeMarketTrends(horizonDays: number) {
     `);
 
     // Price trend analysis
-    const priceTrends = await neonClient.sql(`
+    const priceTrends = // await neonClient.sql(`
       SELECT 
         DATE_TRUNC('month', created_at) as month,
         AVG(price) as avg_price,
@@ -273,7 +273,7 @@ async function analyzeMarketTrends(horizonDays: number) {
 // User churn prediction
 async function predictUserChurn() {
   try {
-    const users = await neonClient.sql(`
+    const users = // await neonClient.sql(`
       SELECT 
         u.id,
         u.created_at as registration_date,
@@ -359,7 +359,7 @@ function calculateLinearTrend(data: { x: number; y: number }[]) {
 }
 
 async function calculateSeasonalPatterns() {
-  const dayPatterns = await neonClient.sql(`
+  const dayPatterns = // await neonClient.sql(`
     SELECT 
       EXTRACT(DOW FROM created_at) as day_of_week,
       COUNT(*) as sales_count
@@ -379,7 +379,7 @@ async function calculateSeasonalPatterns() {
 }
 
 async function getAverageOrderValue() {
-  const result = await neonClient.sql(`
+  const result = // await neonClient.sql(`
     SELECT AVG(amount) as avg_order_value
     FROM purchases
     WHERE status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'
@@ -390,7 +390,7 @@ async function getAverageOrderValue() {
 
 async function predictEngagementTrends(horizonDays: number) {
   // Simple engagement prediction based on historical patterns
-  const engagement = await neonClient.sql(`
+  const engagement = // await neonClient.sql(`
     SELECT 
       DATE(created_at) as date,
       COUNT(DISTINCT user_id) as active_users,
@@ -463,7 +463,7 @@ function generateChurnRecommendations(highRisk: any[], mediumRisk: any[]) {
 
 // Developer-specific prediction functions
 async function generateDeveloperSalesForecast(developerId: string, horizonDays: number) {
-  const historicalData = await neonClient.sql(`
+  const historicalData = // await neonClient.sql(`
     SELECT 
       DATE(p.created_at) as date,
       COUNT(*) as sales_count,
@@ -511,7 +511,7 @@ async function generateDeveloperSalesForecast(developerId: string, horizonDays: 
 }
 
 async function predictAppPerformance(developerId: string, horizonDays: number) {
-  const apps = await neonClient.sql(`
+  const apps = // await neonClient.sql(`
     SELECT 
       a.id,
       a.name,
@@ -559,7 +559,7 @@ async function predictAppPerformance(developerId: string, horizonDays: number) {
 }
 
 async function predictDeveloperRevenue(developerId: string, horizonDays: number) {
-  const revenueData = await neonClient.sql(`
+  const revenueData = // await neonClient.sql(`
     SELECT 
       DATE_TRUNC('week', p.created_at) as week,
       SUM(p.developer_payout) as revenue,

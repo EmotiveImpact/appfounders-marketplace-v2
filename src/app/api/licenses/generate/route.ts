@@ -38,7 +38,7 @@ export const POST = createProtectedRoute(
         WHERE p.id = $1 AND p.user_id = $2 AND p.status = 'completed'
       `;
 
-      const purchaseResult = await neonClient.sql(purchaseQuery, [purchase_id, user.id]);
+      const purchaseResult = // await neonClient.sql(purchaseQuery, [purchase_id, user.id]);
 
       if (purchaseResult.length === 0) {
         return NextResponse.json(
@@ -63,7 +63,7 @@ export const POST = createProtectedRoute(
         WHERE purchase_id = $1 AND status = 'active'
       `;
 
-      const existingLicense = await neonClient.sql(existingLicenseQuery, [purchase_id]);
+      const existingLicense = // await neonClient.sql(existingLicenseQuery, [purchase_id]);
 
       if (existingLicense.length > 0) {
         return NextResponse.json({
@@ -103,7 +103,7 @@ export const POST = createProtectedRoute(
         expiresAt = new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000).toISOString();
       }
 
-      const license = await neonClient.sql(licenseQuery, [
+      const license = // await neonClient.sql(licenseQuery, [
         purchase_id,
         purchase.app_id,
         user.id,
@@ -124,7 +124,7 @@ export const POST = createProtectedRoute(
         ) VALUES ($1, $2, $3, NOW())
       `;
 
-      await neonClient.sql(activityQuery, [
+      // await neonClient.sql(activityQuery, [
         user.id,
         'license_generated',
         JSON.stringify({
@@ -211,7 +211,7 @@ export const GET = createProtectedRoute(
         WHERE l.purchase_id = $1 AND l.user_id = $2
       `;
 
-      const license = await neonClient.sql(licenseQuery, [purchaseId, user.id]);
+      const license = // await neonClient.sql(licenseQuery, [purchaseId, user.id]);
 
       if (license.length === 0) {
         return NextResponse.json({

@@ -36,7 +36,7 @@ export const GET = createProtectedRoute(
           SELECT * FROM custom_reports 
           WHERE id = $1 AND (user_id = $2 OR is_public = true)
         `;
-        const report = await neonClient.sql(reportQuery, [reportId, user.id]);
+        const report = // await neonClient.sql(reportQuery, [reportId, user.id]);
 
         if (report.length === 0) {
           return NextResponse.json(
@@ -71,7 +71,7 @@ export const GET = createProtectedRoute(
           WHERE user_id = $1 OR is_public = true
           ORDER BY created_at DESC
         `;
-        const reports = await neonClient.sql(reportsQuery, [user.id]);
+        const reports = // await neonClient.sql(reportsQuery, [user.id]);
 
         return NextResponse.json({
           success: true,
@@ -125,7 +125,7 @@ export const POST = createProtectedRoute(
         RETURNING *
       `;
 
-      const result = await neonClient.sql(insertQuery, [
+      const result = // await neonClient.sql(insertQuery, [
         user.id,
         name,
         description || '',
@@ -138,7 +138,7 @@ export const POST = createProtectedRoute(
       const reportData = await generateReportData(config, user);
 
       // Update last_generated_at
-      await neonClient.sql(
+      // await neonClient.sql(
         'UPDATE custom_reports SET last_generated_at = NOW() WHERE id = $1',
         [report.id]
       );
@@ -179,7 +179,7 @@ export const PUT = createProtectedRoute(
         SELECT id FROM custom_reports 
         WHERE id = $1 AND user_id = $2
       `;
-      const ownership = await neonClient.sql(ownershipQuery, [id, user.id]);
+      const ownership = // await neonClient.sql(ownershipQuery, [id, user.id]);
 
       if (ownership.length === 0) {
         return NextResponse.json(
@@ -232,7 +232,7 @@ export const PUT = createProtectedRoute(
         RETURNING *
       `;
 
-      const result = await neonClient.sql(updateQuery, updateValues);
+      const result = // await neonClient.sql(updateQuery, updateValues);
 
       return NextResponse.json({
         success: true,
@@ -270,7 +270,7 @@ export const DELETE = createProtectedRoute(
         RETURNING id
       `;
 
-      const result = await neonClient.sql(deleteQuery, [id, user.id]);
+      const result = // await neonClient.sql(deleteQuery, [id, user.id]);
 
       if (result.length === 0) {
         return NextResponse.json(
@@ -332,7 +332,7 @@ async function generateReportData(config: any, user: any) {
     let query = buildReportQuery(metrics, filters, groupBy, dateRange, user);
     
     // Execute query
-    const data = await neonClient.sql(query.sql, query.params);
+    const data = // await neonClient.sql(query.sql, query.params);
 
     // Process data based on chart type
     const processedData = processReportData(data, metrics, chartType, groupBy);

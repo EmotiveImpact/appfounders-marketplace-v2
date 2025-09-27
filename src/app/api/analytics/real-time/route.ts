@@ -307,7 +307,7 @@ async function getDeveloperMetrics(developerId: string, timeInterval: string, gr
 
 // Developer app metrics
 async function getDeveloperAppMetrics(developerId: string, timeInterval: string, groupBy: string) {
-  const query = await neonClient.sql(`
+  const query = // await neonClient.sql(`
     SELECT 
       a.id,
       a.name,
@@ -330,7 +330,7 @@ async function getDeveloperAppMetrics(developerId: string, timeInterval: string,
 
 // Developer revenue metrics
 async function getDeveloperRevenueMetrics(developerId: string, timeInterval: string, groupBy: string) {
-  const query = await neonClient.sql(`
+  const query = // await neonClient.sql(`
     SELECT 
       ${groupBy} as time_bucket,
       SUM(p.developer_payout) as earnings,
