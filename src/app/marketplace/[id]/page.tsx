@@ -5,25 +5,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { formatCurrency, getAppTypeIcon } from '@/lib/utils';
-import { ArrowLeft, Star, Check, ChevronRight } from 'lucide-react';
-import { CheckoutButton } from '@/components/stripe/checkout-button';
+import { ArrowLeft, Star, Check, ChevronRight, CreditCard } from 'lucide-react';
+
 import { useAppDetail } from '@/lib/hooks/useMarketplace';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function AppDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const appId = params.id as string;
-  
-  const { 
-    app, 
-    isLoading, 
-    error, 
+  const appSlug = params.id as string;
+
+  const {
+    app,
+    isLoading,
+    error,
     purchaseApp,
     isPurchasing,
     hasUserPurchasedApp,
     refreshApp
-  } = useAppDetail(appId);
+  } = useAppDetail(appSlug);
   
   const { user, isAuthenticated } = useAuth();
   const [selectedImage, setSelectedImage] = useState('');
@@ -204,12 +204,20 @@ export default function AppDetailPage() {
                   </div>
                 ) : (
                   <div className="w-64">
-                    <CheckoutButton
-                      appId={appId}
-                      appName={app.name}
-                      price={app.price * 100} // Convert to cents
+                    <button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          router.push('/signin');
+                          return;
+                        }
+                        alert(`Demo: Purchase ${app.name} for ${formatCurrency(app.price)}\n\nThis is a demo - Stripe integration is available but not configured for this demo.`);
+                      }}
                       disabled={user?.role !== 'tester' && isAuthenticated}
-                    />
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <CreditCard className="mr-2 h-5 w-5" />
+                      Purchase for {formatCurrency(app.price)}
+                    </button>
                   </div>
                 )}
               </div>

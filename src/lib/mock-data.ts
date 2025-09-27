@@ -3,7 +3,7 @@ export const mockApps = [
   {
     id: 'app-1',
     name: 'DesignVault',
-    description: 'All-in-one design system manager with component library, asset management, and collaboration tools.',
+    description: 'All-in-one design system manager with component library, asset management, and collaboration tools. Perfect for design teams who want to maintain consistency across projects.',
     price: 79.99,
     image: 'https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=1000&auto=format&fit=crop',
     type: 'MAC',
@@ -12,12 +12,59 @@ export const mockApps = [
     category: 'design',
     downloads: 12450,
     releaseDate: '2023-09-15',
+    purchaseCount: 1247,
+    screenshots: [
+      'https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1558655146-9f40138edfeb?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1611224923853-80b023f02d71?q=80&w=1000&auto=format&fit=crop'
+    ],
     features: [
       'Component library management',
       'Design token system',
-      'Version control',
-      'Team collaboration',
-      'Plugin ecosystem'
+      'Version control integration',
+      'Real-time team collaboration',
+      'Plugin ecosystem with 50+ integrations',
+      'Advanced search and filtering',
+      'Export to Figma, Sketch, and Adobe XD',
+      'Dark mode support',
+      'Custom branding options',
+      'API access for automation'
+    ]
+  },
+  {
+    id: 'taskflow-pro',
+    name: 'TaskFlow Pro',
+    description: 'Revolutionary productivity app with advanced task management, AI-powered scheduling, and team collaboration features. Transform how you organize your work and boost productivity by 300%.',
+    price: 49.99,
+    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1000&auto=format&fit=crop',
+    type: 'IOS',
+    developer: 'ProductivityLabs',
+    rating: 4.8,
+    category: 'productivity',
+    downloads: 25680,
+    releaseDate: '2023-11-20',
+    purchaseCount: 2568,
+    screenshots: [
+      'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1611224923853-80b023f02d71?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1558655146-9f40138edfeb?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=1000&auto=format&fit=crop'
+    ],
+    features: [
+      'AI-powered task prioritization',
+      'Smart scheduling with calendar integration',
+      'Real-time team collaboration',
+      'Advanced project templates',
+      'Time tracking with detailed analytics',
+      'Custom workflows and automation',
+      'Cross-platform synchronization',
+      'Offline mode support',
+      'Advanced reporting and insights',
+      'Integration with 100+ popular tools',
+      'Voice commands and dictation',
+      'Dark mode and custom themes'
     ]
   },
   {

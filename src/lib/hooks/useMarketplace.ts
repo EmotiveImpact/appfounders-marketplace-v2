@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { mockApps } from '../mock-data';
+import { findAppBySlug } from '@/lib/utils';
 
 export function useMarketplace() {
   const { user } = useAuth();
@@ -156,35 +157,39 @@ async (newFilters: Record<string, string>) => {
   };
 }
 
-export function useAppDetail(appId?: string) {
+export function useAppDetail(appSlugOrId?: string) {
   const { user } = useAuth();
   const [app, setApp] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch app data when appId changes
+  // Fetch app data when appSlugOrId changes
   useEffect(() => {
-    if (appId) {
+    if (appSlugOrId) {
       setIsLoading(true);
-      
+
       // Simulate API delay
       setTimeout(() => {
-        const foundApp = mockApps.find(app => app.id === appId);
-        
+        // Try to find by slug first, then by ID for backward compatibility
+        let foundApp = findAppBySlug(mockApps, appSlugOrId);
+        if (!foundApp) {
+          foundApp = mockApps.find(app => app.id === appSlugOrId);
+        }
+
         if (foundApp) {
           setApp(foundApp);
         } else {
           setError(new Error('App not found'));
         }
-        
+
         setIsLoading(false);
       }, 500);
     }
-  }, [appId]);
+  }, [appSlugOrId]);
 
   // Function to purchase the app
   const purchaseApp = useCallback(async () => {
-    if (!appId) {
+    if (!app?.id) {
       throw new Error('App ID is required');
     }
 
@@ -198,36 +203,40 @@ export function useAppDetail(appId?: string) {
 
     // Simulate purchase
     return { success: true, message: 'Purchase successful' };
-  }, [appId, user]);
+  }, [app?.id, user]);
 
   // Function to check if user has purchased the app
   const hasUserPurchasedApp = useCallback(() => {
-    if (!user || !user.purchasedApps || !appId) {
+    if (!user || !user.purchasedApps || !app?.id) {
       return false;
     }
 
-    return user.purchasedApps.includes(appId);
-  }, [user, appId]);
+    return user.purchasedApps.includes(app.id);
+  }, [user, app?.id]);
 
   // Function to refresh app data
   const refreshApp = useCallback(() => {
-    if (appId) {
+    if (appSlugOrId) {
       setIsLoading(true);
-      
+
       // Simulate API delay
       setTimeout(() => {
-        const foundApp = mockApps.find(app => app.id === appId);
-        
+        // Try to find by slug first, then by ID for backward compatibility
+        let foundApp = findAppBySlug(mockApps, appSlugOrId);
+        if (!foundApp) {
+          foundApp = mockApps.find(app => app.id === appSlugOrId);
+        }
+
         if (foundApp) {
           setApp(foundApp);
         } else {
           setError(new Error('App not found'));
         }
-        
+
         setIsLoading(false);
       }, 300);
     }
-  }, [appId]);
+  }, [appSlugOrId]);
 
   return {
     app,

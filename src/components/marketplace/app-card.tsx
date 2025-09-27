@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, generateAppSlug } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import PlatformLogo from '@/components/ui/platform-logo';
 
@@ -27,8 +27,10 @@ const AppCard = ({
   developer,
   rating = 0,
 }: AppCardProps) => {
+  const appSlug = generateAppSlug(name);
+
   return (
-    <Link href={`/marketplace/${id}`}>
+    <Link href={`/marketplace/${appSlug}`}>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -13,6 +13,22 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+// Generate URL-friendly slug from app name
+export function generateAppSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim()
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
+// Find app by slug
+export function findAppBySlug(apps: any[], slug: string): any {
+  return apps.find(app => generateAppSlug(app.name) === slug);
+}
+
 export function formatDate(date: string | Date): string {
   return format(new Date(date), 'MMM d, yyyy');
 }
