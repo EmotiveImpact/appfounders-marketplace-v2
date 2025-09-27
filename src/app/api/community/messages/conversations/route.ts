@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     const countResult = await neonClient.query(countQuery, params.slice(0, -2));
 
     return NextResponse.json({
-      users: usersResult.rows,
+      users: usersResult,
       pagination: {
         page,
         limit,
@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
