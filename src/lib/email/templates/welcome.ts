@@ -1,6 +1,6 @@
-import { EmailTemplate } from '../types';
+// import { EmailTemplate } from '../types';
 
-export const welcomeTemplate: EmailTemplate = {
+export const welcomeTemplate: any = {
   subject: 'Welcome to AppFounders! 🚀',
   
   html: (data: {

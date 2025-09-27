@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, User } from 'lucide-react';
 
-const BlogCard = ({ blog }) => {
+const BlogCard = ({ blog }: any) => {
   return (
     <Link href={`/blog/${blog.id}`} className="block bg-white rounded-lg shadow-md overflow-hidden">
       <div className="relative h-48">

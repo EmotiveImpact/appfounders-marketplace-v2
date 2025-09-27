@@ -3,15 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { 
-  Settings, 
-  Bell, 
-  Shield, 
-  Eye, 
-  Save, 
-  X, 
+import {
+  Settings,
+  Bell,
+  Shield,
+  Eye,
+  Save,
+  X,
   Loader2,
-  Toggle,
   Check
 } from 'lucide-react';
 import Link from 'next/link';
@@ -62,7 +61,7 @@ export default function TesterSettingsPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/signin');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);

@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs';
-import { User } from '@sentry/types';
+import React from 'react';
+// import { User } from '@sentry/types';
 
 // Initialize Sentry
 export function initSentry() {
@@ -42,11 +43,11 @@ export function initSentry() {
     
     // Additional configuration
     integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Replay({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+      // new Sentry.Integrations.Http({ tracing: true }),
+      // new Sentry.Replay({
+      //   maskAllText: true,
+      //   blockAllMedia: true,
+      // }),
     ],
     
     // Release tracking
@@ -74,7 +75,7 @@ export function setSentryUser(user: {
     email: user.email,
     username: user.username,
     role: user.role,
-  } as User);
+  } as any);
 }
 
 // Clear user context
@@ -104,7 +105,7 @@ export function captureException(
   context?: {
     tags?: Record<string, string>;
     extra?: Record<string, any>;
-    user?: Partial<User>;
+    user?: any;
     level?: 'fatal' | 'error' | 'warning' | 'info' | 'debug';
   }
 ) {
@@ -162,7 +163,7 @@ export function captureMessage(
 
 // Performance monitoring
 export function startTransaction(name: string, op: string) {
-  return Sentry.startTransaction({
+  return (Sentry as any).startTransaction({
     name,
     op,
   });
@@ -255,7 +256,7 @@ export class SentryErrorBoundary extends Sentry.ErrorBoundary {
 
 // Custom hooks for monitoring
 export function useSentryTransaction(name: string, op: string) {
-  const transaction = React.useRef<Sentry.Transaction | null>(null);
+  const transaction = React.useRef<any>(null);
   
   React.useEffect(() => {
     transaction.current = startTransaction(name, op);

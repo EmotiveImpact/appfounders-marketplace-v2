@@ -44,8 +44,8 @@ export function HostedCheckout({
     premiumSupport: { amount: 4999, name: 'Premium Support Package' },
   };
 
-  const finalAmount = productType ? productPricing[productType].amount : amount;
-  const finalName = productType ? productPricing[productType].name : (appName || 'Purchase');
+  const finalAmount = productType ? (productPricing as any)[productType]?.amount : amount;
+  const finalName = productType ? (productPricing as any)[productType]?.name : (appName || 'Purchase');
 
   const handleCheckout = async () => {
     if (!finalAmount) {

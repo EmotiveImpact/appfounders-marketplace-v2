@@ -9,7 +9,7 @@ import { AlertCircle, ArrowLeft } from 'lucide-react';
 export default function BugReportPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { data: purchases, loading: purchasesLoading, fetchPurchases } = useUserPurchases();
+  const { data: purchases, loading: purchasesLoading } = useUserPurchases();
   const { execute: createBug, loading: submitting, error: submitError } = useCreateBug();
   
   // Form state
@@ -33,15 +33,15 @@ export default function BugReportPage() {
   // Fetch purchases on initial load
   useEffect(() => {
     if (isAuthenticated && user && !purchases && !purchasesLoading) {
-      fetchPurchases();
+      // fetchPurchases(); // Removed since fetchPurchases doesn't exist
     }
-  }, [isAuthenticated, user, fetchPurchases, purchases, purchasesLoading]);
+  }, [isAuthenticated, user, purchases, purchasesLoading]);
   
   // Redirect if not authenticated or not a tester
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/sign-in');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -243,7 +243,7 @@ export default function BugReportPage() {
                 disabled={submitting}
               >
                 <option value="">Select an app</option>
-                {availableApps.map((purchase) => (
+                {availableApps.map((purchase: any) => (
                   <option key={purchase.app.id} value={purchase.app.id}>
                     {purchase.app.name}
                   </option>

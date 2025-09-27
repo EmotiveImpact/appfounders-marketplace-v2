@@ -37,7 +37,7 @@ export default function DeveloperDashboard() {
   
   // Check user role and redirect if necessary
   useEffect(() => {
-    if (user && user.role !== 'developer') {
+    if (user && (user as any).role !== 'developer') {
       router.push('/dashboard');
     }
   }, [user, router]);

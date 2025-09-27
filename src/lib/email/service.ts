@@ -11,7 +11,7 @@ if (emailConfig.sendgrid.apiKey) {
 // Create SMTP transporter
 let smtpTransporter: nodemailer.Transporter | null = null;
 if (emailConfig.provider === 'smtp' && emailConfig.smtp.host) {
-  smtpTransporter = nodemailer.createTransporter({
+  smtpTransporter = nodemailer.createTransport({
     host: emailConfig.smtp.host,
     port: emailConfig.smtp.port,
     secure: emailConfig.smtp.secure,

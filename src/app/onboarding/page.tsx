@@ -32,7 +32,7 @@ export default function OnboardingPage() {
         
         if (data.onboarding.completed) {
           // User has already completed onboarding, redirect to dashboard
-          router.push(`/dashboard/${user?.role}`);
+          router.push(`/dashboard/${(user as any)?.role}`);
           return;
         }
         
@@ -68,9 +68,9 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
       <OnboardingFlow
-        userRole={user.role as 'developer' | 'tester'}
-        userId={user.id}
-        initialData={onboardingData}
+        userRole={(user as any).role as 'developer' | 'tester'}
+        userId={(user as any).id}
+        initialData={onboardingData || undefined}
         onComplete={handleOnboardingComplete}
       />
     </div>

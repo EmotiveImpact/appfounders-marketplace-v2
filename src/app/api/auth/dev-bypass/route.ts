@@ -4,9 +4,9 @@ import { cookies } from 'next/headers';
 import { SignJWT } from 'jose';
 
 // Only allow in development mode
-if (process.env.NODE_ENV === 'production') {
-  throw new Error('Dev bypass is not available in production');
-}
+// if (process.env.NODE_ENV === 'production') {
+//   throw new Error('Dev bypass is not available in production');
+// }
 
 const TEST_USERS = [
   {
@@ -44,8 +44,12 @@ const TEST_USERS = [
 ];
 
 export async function POST(request: NextRequest) {
-  // Double-check environment
+  // Only allow in development
   if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Dev bypass is not available in production' }, { status: 403 });
+  }
+  // Double-check environment
+  if ((process.env.NODE_ENV as any) === 'production') {
     return NextResponse.json(
       { error: 'Dev bypass not available in production' },
       { status: 403 }

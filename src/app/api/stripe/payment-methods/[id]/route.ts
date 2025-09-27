@@ -62,7 +62,7 @@ export const DELETE = createProtectedRoute(
           type: 'card',
         });
 
-        const otherMethods = paymentMethods.data.filter(pm => pm.id !== paymentMethodId);
+        const otherMethods = paymentMethods.data.filter((pm: any) => pm.id !== paymentMethodId);
         
         if (otherMethods.length > 0) {
           // Set the first available payment method as default

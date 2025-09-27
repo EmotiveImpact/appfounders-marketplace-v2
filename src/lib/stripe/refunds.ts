@@ -43,24 +43,24 @@ export async function createRefund(
     // Get payment intent details
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
-    if (!paymentIntent.charges.data.length) {
+    if (!(paymentIntent as any).charges?.data?.length) {
       throw new Error('No charges found for this payment intent');
     }
 
-    const charge = paymentIntent.charges.data[0];
+    const charge = (paymentIntent as any).charges?.data?.[0];
     const refundAmount = amount || paymentIntent.amount;
 
     // Create refund in Stripe
     const refund = await stripe.refunds.create({
-      charge: charge.id,
+      charge: charge?.id,
       amount: refundAmount,
-      reason,
+      reason: reason as any,
       metadata: {
         admin_id: adminId || '',
         description: description || '',
         original_payment_intent: paymentIntentId,
       },
-    });
+    } as any);
 
     // Get purchase record
     const purchaseResult = await neonClient.sql`

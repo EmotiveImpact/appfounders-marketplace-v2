@@ -353,7 +353,7 @@ export async function submitForReview(
     for (const admin of adminResult) {
       await sendNotification(
         admin.id,
-        'app_review_needed',
+        'app_review_needed' as any,
         'New App Submission',
         `A new app "${app.name}" has been submitted for review.`,
         { app_id: app.id, app_name: app.name, developer_id: developerId }
@@ -449,7 +449,7 @@ export async function reviewSubmission(
 
     await sendNotification(
       app.developer_id,
-      notificationType,
+      notificationType as any,
       notificationTitle,
       notificationMessage,
       { 

@@ -228,40 +228,7 @@ export class DatabaseClient {
     return result;
   }
 
-  // Purchase operations
-  async createPurchase(purchaseData: {
-    user_id: string;
-    app_id: string;
-    stripe_payment_intent_id: string;
-    amount: number;
-    currency: string;
-    status: string;
-    metadata?: any;
-  }) {
-    const {
-      user_id,
-      app_id,
-      stripe_payment_intent_id,
-      amount,
-      currency,
-      status,
-      metadata = {},
-    } = purchaseData;
 
-    const result = await this.sql`
-      INSERT INTO purchases (
-        user_id, app_id, stripe_payment_intent_id,
-        amount, currency, status, metadata
-      )
-      VALUES (
-        ${user_id}, ${app_id}, ${stripe_payment_intent_id},
-        ${amount}, ${currency}, ${status}, ${JSON.stringify(metadata)}
-      )
-      RETURNING *
-    `;
-
-    return result[0];
-  }
 
   async updatePurchaseStatus(paymentIntentId: string, status: string) {
     const result = await this.sql`
@@ -304,44 +271,7 @@ export class DatabaseClient {
     }
   }
 
-  async createApp(appData: {
-    name: string;
-    description: string;
-    category: string;
-    price: number;
-    developer_id: string;
-    images?: string[];
-    features?: string[];
-    requirements?: any;
-    status?: string;
-  }) {
-    const {
-      name,
-      description,
-      category,
-      price,
-      developer_id,
-      images = [],
-      features = [],
-      requirements = {},
-      status = 'pending',
-    } = appData;
 
-    const result = await this.sql`
-      INSERT INTO apps (
-        name, description, category, price, developer_id,
-        images, features, requirements, status
-      )
-      VALUES (
-        ${name}, ${description}, ${category}, ${price}, ${developer_id},
-        ${JSON.stringify(images)}, ${JSON.stringify(features)},
-        ${JSON.stringify(requirements)}, ${status}
-      )
-      RETURNING *
-    `;
-
-    return result[0];
-  }
 }
 
 // Export singleton instance

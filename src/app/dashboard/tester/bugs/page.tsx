@@ -19,7 +19,7 @@ export default function BugsListPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/sign-in');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -32,7 +32,7 @@ export default function BugsListPage() {
   }, [isAuthenticated, user, fetchBugs, bugsData, bugsLoading]);
   
   // Filter bugs based on search query
-  const filteredBugs = bugsData?.docs?.filter(bug => 
+  const filteredBugs = bugsData?.docs?.filter((bug: any) =>
     bug.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bug.app?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
@@ -176,7 +176,7 @@ export default function BugsListPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredBugs.map((bug) => (
+                  {filteredBugs.map((bug: any) => (
                     <tr key={bug.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{bug.title}</div>

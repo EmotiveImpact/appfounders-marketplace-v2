@@ -99,16 +99,16 @@ export default function SettingsPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Role</span>
-                <Badge className={`${getRoleBadgeColor(user?.role || '')} flex items-center gap-1`}>
-                  {getRoleIcon(user?.role || '')}
-                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                <Badge className={`${getRoleBadgeColor((user as any)?.role || '')} flex items-center gap-1`}>
+                  {getRoleIcon((user as any)?.role || '')}
+                  {(user as any)?.role?.charAt(0).toUpperCase() + (user as any)?.role?.slice(1)}
                 </Badge>
               </div>
               
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Email Status</span>
                 <div className="flex items-center gap-1">
-                  {user?.email_verified ? (
+                  {(user as any)?.email_verified ? (
                     <>
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       <span className="text-sm text-green-600">Verified</span>
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">
-                    {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                    {(user as any)?.created_at ? new Date((user as any).created_at).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {user?.role === 'developer' ? 'Apps Published' : 'Apps Tested'}
+                  {(user as any)?.role === 'developer' ? 'Apps Published' : 'Apps Tested'}
                 </span>
                 <span className="font-medium">{accountInfo?.apps_count || 0}</span>
               </div>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {user?.role === 'developer' ? 'Total Earned' : 'Total Spent'}
+                  {(user as any)?.role === 'developer' ? 'Total Earned' : 'Total Spent'}
                 </span>
                 <span className="font-medium">
                   ${accountInfo?.total_amount || '0.00'}
@@ -194,7 +194,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Email Verification Alert */}
-        {!user?.email_verified && (
+        {!(user as any)?.email_verified && (
           <Alert>
             <Mail className="h-4 w-4" />
             <AlertDescription>

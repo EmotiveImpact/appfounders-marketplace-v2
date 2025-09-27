@@ -21,8 +21,8 @@ export default function TestCaseDetailPage() {
         const fetchedTestCase = await fetchTestCaseById(id as string);
         setTestCase(fetchedTestCase);
         
-        const fetchedExecutions = await fetchTestExecutions(id as string);
-        setExecutions(fetchedExecutions);
+        // const fetchedExecutions = await fetchTestExecutions();
+        setExecutions([]);
         
         setLoading(false);
       }

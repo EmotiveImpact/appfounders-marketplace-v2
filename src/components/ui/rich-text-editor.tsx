@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-interface RichTextEditorProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface RichTextEditorProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
   label?: string;

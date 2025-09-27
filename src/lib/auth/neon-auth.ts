@@ -94,17 +94,17 @@ export async function signInUser(signInData: SignInData): Promise<User> {
 
   // Return user without password hash
   const { password_hash, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  return userWithoutPassword as any;
 }
 
 // Get user by ID
 export async function getUserById(id: string): Promise<User | null> {
-  return await db.getUserById(id);
+  return await db.getUserById(id) as any;
 }
 
 // Get user by email
 export async function getUserByEmail(email: string): Promise<User | null> {
-  return await db.getUserByEmail(email);
+  return await db.getUserByEmail(email) as any;
 }
 
 // Update user
@@ -112,7 +112,7 @@ export async function updateUser(
   id: string, 
   updates: Partial<Pick<User, 'name' | 'avatar_url' | 'role'>>
 ): Promise<User> {
-  return await db.updateUser(id, updates);
+  return await db.updateUser(id, updates) as any;
 }
 
 // Change password
@@ -142,11 +142,11 @@ export async function changePassword(
   const newPasswordHash = await hashPassword(newPassword);
 
   // Update password in database
-  await db.sql`
-    UPDATE users 
-    SET password_hash = ${newPasswordHash}, updated_at = NOW()
-    WHERE id = ${userId}
-  `;
+  await (db as any).query(`
+    UPDATE users
+    SET password_hash = $1, updated_at = NOW()
+    WHERE id = $2
+  `, [newPasswordHash, userId]);
 }
 
 // Email verification (placeholder for future implementation)

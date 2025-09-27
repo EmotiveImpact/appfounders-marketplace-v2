@@ -109,8 +109,8 @@ export const authOptions: AuthOptions = {
           }
 
           // Update user object with our database user info
-          user.id = existingUser.id;
-          user.role = existingUser.role;
+          (user as any).id = (existingUser as any)?.id;
+          (user as any).role = (existingUser as any)?.role;
         } catch (error) {
           console.error('Error handling social login:', error);
           return false;

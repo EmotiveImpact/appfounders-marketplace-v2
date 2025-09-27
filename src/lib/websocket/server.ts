@@ -13,7 +13,7 @@ const port = parseInt(process.env.PORT || '3000', 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-interface AuthenticatedSocket extends Socket {
+interface AuthenticatedSocket {
   userId?: string;
   userRole?: string;
   authenticated?: boolean;
@@ -85,7 +85,7 @@ class WebSocketServer {
   private setupEventHandlers() {
     if (!this.io) return;
 
-    this.io.use(async (socket: AuthenticatedSocket, next) => {
+    this.io.use(async (socket: any, next) => {
       try {
         const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
         
@@ -122,7 +122,7 @@ class WebSocketServer {
       }
     });
 
-    this.io.on('connection', (socket: AuthenticatedSocket) => {
+    this.io.on('connection', (socket: any) => {
       console.log(`User ${socket.userId} connected with role ${socket.userRole}`);
 
       // Join role-based rooms
@@ -138,7 +138,7 @@ class WebSocketServer {
       }
 
       // Handle analytics subscription
-      socket.on('subscribe:analytics', (data) => {
+      socket.on('subscribe:analytics', (data: any) => {
         if (socket.userRole === 'admin') {
           socket.join('analytics:platform');
         } else if (socket.userRole === 'developer') {
@@ -147,7 +147,7 @@ class WebSocketServer {
       });
 
       // Handle real-time analytics requests
-      socket.on('request:analytics', async (data) => {
+      socket.on('request:analytics', async (data: any) => {
         try {
           const analytics = await this.getAnalyticsData(socket.userId!, socket.userRole!, data);
           socket.emit('analytics:data', analytics);

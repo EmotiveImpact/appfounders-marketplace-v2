@@ -19,12 +19,12 @@ export default function DashboardLayout({
     if (!isLoading) {
       if (!isAuthenticated) {
         router.push('/signin');
-      } else if (user?.role) {
-        setRole(user.role);
+      } else if ((user as any)?.role) {
+        setRole((user as any).role);
 
         // Only redirect if user is on the base dashboard path
         if (pathname === '/dashboard') {
-          router.push(`/dashboard/${user.role}`);
+          router.push(`/dashboard/${(user as any).role}`);
         }
       }
     }

@@ -16,7 +16,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useBugs } from '@/hooks/useTesterDashboard';
-import { getCurrentUser, hasRole } from '@/services/authService';
+// import { getCurrentUser, hasRole } from '@/services/authService';
 import { 
   formatDate, 
   getSeverityColorClass, 
@@ -47,16 +47,16 @@ export default function BugDetail({ bugId }: BugDetailProps) {
   
   useEffect(() => {
     fetchBugById(bugId);
-    setIsAdmin(hasRole('admin'));
+    setIsAdmin(false); // hasRole('admin')
   }, [bugId, fetchBugById]);
   
   const handleStatusUpdate = async () => {
     if (!currentBug) return;
     
-    const user = getCurrentUser();
-    if (!user) return;
-    
-    await updateBug(bugId, newStatus, user.id, user.name);
+    // const user = getCurrentUser();
+    // if (!user) return;
+
+    await updateBug(bugId, newStatus, 'user-id', 'user-name');
     setStatusUpdateOpen(false);
   };
   

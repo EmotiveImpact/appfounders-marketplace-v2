@@ -71,7 +71,7 @@ export default function DeveloperSettingsPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/signin');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'developer') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'developer') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);

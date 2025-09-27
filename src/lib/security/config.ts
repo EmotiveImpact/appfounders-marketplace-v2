@@ -225,7 +225,7 @@ export const MALICIOUS_PATTERNS = [
   
   // Path traversal
   /\.\.\//g,
-  /\.\.\\\\g,
+  /\.\.\\\\/g,
   /\.\.\%2f/gi,
   /\.\.\%5c/gi,
   
@@ -328,7 +328,7 @@ export const SecurityUtils = {
   
   // Validate file type
   isAllowedFileType(mimeType: string): boolean {
-    return SECURITY_CONFIG.UPLOAD.ALLOWED_MIME_TYPES.includes(mimeType);
+    return SECURITY_CONFIG.UPLOAD.ALLOWED_MIME_TYPES.includes(mimeType as any);
   },
   
   // Check password strength

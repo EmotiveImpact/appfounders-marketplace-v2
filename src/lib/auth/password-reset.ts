@@ -30,23 +30,23 @@ export async function createPasswordResetToken(email: string): Promise<{ token: 
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
   // Store token in database
-  await db.sql`
+  await (db as any).query(`
     INSERT INTO password_reset_tokens (user_id, token, expires_at)
-    VALUES (${user.id}, ${token}, ${expiresAt.toISOString()})
-  `;
+    VALUES ($1, $2, $3)
+  `, [user.id, token, expiresAt.toISOString()]);
 
   return { token, user };
 }
 
 // Verify password reset token
 export async function verifyPasswordResetToken(token: string): Promise<{ valid: boolean; user_id?: string }> {
-  const result = await db.sql`
+  const result = await (db as any).query(`
     SELECT user_id, expires_at, used
     FROM password_reset_tokens
-    WHERE token = ${token}
+    WHERE token = $1
     ORDER BY created_at DESC
     LIMIT 1
-  `;
+  `, [token]);
 
   if (result.length === 0) {
     return { valid: false };
@@ -85,18 +85,18 @@ export async function resetPasswordWithToken(
     const passwordHash = await hashPassword(newPassword);
 
     // Update user password
-    await db.sql`
-      UPDATE users 
-      SET password_hash = ${passwordHash}, updated_at = NOW()
-      WHERE id = ${tokenVerification.user_id}
-    `;
+    await (db as any).query(`
+      UPDATE users
+      SET password_hash = $1, updated_at = NOW()
+      WHERE id = $2
+    `, [passwordHash, tokenVerification.user_id]);
 
     // Mark token as used
-    await db.sql`
-      UPDATE password_reset_tokens 
+    await (db as any).query(`
+      UPDATE password_reset_tokens
       SET used = true, updated_at = NOW()
-      WHERE token = ${token}
-    `;
+      WHERE token = $1
+    `, [token]);
 
     return { success: true };
   } catch (error) {
@@ -108,10 +108,10 @@ export async function resetPasswordWithToken(
 // Clean up expired tokens (should be run periodically)
 export async function cleanupExpiredTokens(): Promise<void> {
   const now = new Date();
-  await db.sql`
+  await (db as any).query(`
     DELETE FROM password_reset_tokens
-    WHERE expires_at < ${now.toISOString()} OR used = true
-  `;
+    WHERE expires_at < $1 OR used = true
+  `, [now.toISOString()]);
 }
 
 // Send password reset email (placeholder for email service integration)

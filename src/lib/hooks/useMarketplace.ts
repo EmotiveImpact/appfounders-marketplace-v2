@@ -120,7 +120,7 @@ async (newFilters: Record<string, string>) => {
         throw new Error('You must be logged in to purchase an app');
       }
 
-      if (user.role !== 'tester') {
+      if ((user as any)?.role !== 'tester') {
         throw new Error('Only testers can purchase apps');
       }
 
@@ -133,11 +133,11 @@ async (newFilters: Record<string, string>) => {
   // Function to check if user has purchased an app
   const hasUserPurchasedApp = useCallback(
     (appId: string) => {
-      if (!user || !user.purchasedApps) {
+      if (!user || !(user as any)?.purchasedApps) {
         return false;
       }
 
-      return user.purchasedApps?.includes(appId);
+      return (user as any)?.purchasedApps?.includes(appId);
     },
     [user]
   );
@@ -197,7 +197,7 @@ export function useAppDetail(appSlugOrId?: string) {
       throw new Error('You must be logged in to purchase an app');
     }
 
-    if (user.role !== 'tester') {
+    if ((user as any)?.role !== 'tester') {
       throw new Error('Only testers can purchase apps');
     }
 
@@ -207,11 +207,11 @@ export function useAppDetail(appSlugOrId?: string) {
 
   // Function to check if user has purchased the app
   const hasUserPurchasedApp = useCallback(() => {
-    if (!user || !user.purchasedApps || !app?.id) {
+    if (!user || !(user as any)?.purchasedApps || !app?.id) {
       return false;
     }
 
-    return user.purchasedApps.includes(app.id);
+    return (user as any)?.purchasedApps?.includes(app.id);
   }, [user, app?.id]);
 
   // Function to refresh app data

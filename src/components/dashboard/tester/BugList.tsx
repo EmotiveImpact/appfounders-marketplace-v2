@@ -12,7 +12,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useBugs } from '@/hooks/useTesterDashboard';
-import { getCurrentUser } from '@/services/authService';
+// import { getCurrentUser } from '@/services/authService';
 import { 
   formatDate, 
   getSeverityColorClass, 
@@ -39,15 +39,16 @@ export default function BugList() {
   } = useBugs();
   
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setUserId(user.id);
-      if (user.role === 'admin') {
-        fetchAllBugs();
-      } else {
-        fetchBugsByTesterId(user.id);
-      }
-    }
+    // const user = getCurrentUser();
+    // if (user) {
+    //   setUserId(user.id);
+    //   if (user.role === 'admin') {
+    //     fetchAllBugs();
+    //   } else {
+    //     fetchBugsByTesterId(user.id);
+    //   }
+    // }
+    fetchBugsByTesterId('user-id');
   }, [fetchBugsByTesterId, fetchAllBugs]);
   
   // Filter and sort bugs

@@ -1,6 +1,6 @@
 import { User, Calendar } from 'lucide-react';
 
-const BlogAuthorInfo = ({ author, date }) => {
+const BlogAuthorInfo = ({ author, date }: any) => {
   return (
     <div className="flex items-center text-sm text-gray-500 mb-4">
       <User className="h-4 w-4 mr-1" /> {author}

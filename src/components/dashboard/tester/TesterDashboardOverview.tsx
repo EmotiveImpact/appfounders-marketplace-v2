@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useBugs, useTestCases } from '@/hooks/useTesterDashboard';
-import { getCurrentUser } from '@/services/authService';
+// import { getCurrentUser } from '@/services/authService';
 import { 
   formatDate, 
   getSeverityColorClass, 
@@ -45,14 +45,19 @@ export default function TesterDashboardOverview() {
   } = useTestCases();
   
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setUserId(user.id);
-      fetchBugsByTesterId(user.id);
-      fetchTestCasesByTesterId(user.id);
-      fetchBugStatistics();
-      fetchTestCaseStatistics();
-    }
+    // const user = getCurrentUser();
+    // if (user) {
+    //   setUserId(user.id);
+    //   fetchBugsByTesterId(user.id);
+    //   fetchTestCasesByTesterId(user.id);
+    //   fetchBugStatistics();
+    //   fetchTestCaseStatistics();
+    // }
+    setUserId('user-id');
+    fetchBugsByTesterId('user-id');
+    fetchTestCasesByTesterId('user-id');
+    fetchBugStatistics();
+    fetchTestCaseStatistics();
   }, [fetchBugsByTesterId, fetchTestCasesByTesterId, fetchBugStatistics, fetchTestCaseStatistics]);
   
   const loading = bugsLoading || testCasesLoading;

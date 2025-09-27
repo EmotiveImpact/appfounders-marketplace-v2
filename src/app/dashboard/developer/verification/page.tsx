@@ -38,7 +38,7 @@ export default function DeveloperVerificationPage() {
   const [showFlow, setShowFlow] = useState(false);
 
   useEffect(() => {
-    if (user && user.role === 'developer') {
+    if (user && (user as any).role === 'developer') {
       loadVerificationStatus();
     }
   }, [user]);
@@ -122,7 +122,7 @@ export default function DeveloperVerificationPage() {
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'developer') {
+  if (!isAuthenticated || (user as any)?.role !== 'developer') {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <Alert variant="destructive">
@@ -140,7 +140,7 @@ export default function DeveloperVerificationPage() {
       <AuthGuard>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
           <DeveloperVerificationFlow
-            userId={user.id}
+            userId={(user as any)?.id}
             onComplete={() => {
               setShowFlow(false);
               loadVerificationStatus();

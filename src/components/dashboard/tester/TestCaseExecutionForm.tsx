@@ -12,7 +12,7 @@ interface TestCaseExecutionFormProps {
 
 export default function TestCaseExecutionForm({ testCase }: TestCaseExecutionFormProps) {
   const router = useRouter();
-  const { executeTestCase } = useTesterDashboard();
+  // const { executeTestCase } = useTesterDashboard();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepResults, setStepResults] = useState<Array<{
     stepNumber: number;
@@ -51,7 +51,7 @@ export default function TestCaseExecutionForm({ testCase }: TestCaseExecutionFor
       stepResults
     };
 
-    await executeTestCase(executionData);
+    // await executeTestCase(executionData);
     router.push(`/dashboard/tester/test-cases/${testCase.id}`);
   };
 

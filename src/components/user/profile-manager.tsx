@@ -349,8 +349,7 @@ export function ProfileManager() {
               <div className="space-y-2">
                 <Label>Profile Picture</Label>
                 <AvatarUpload
-                  onUpload={handleAvatarUpload}
-                  currentAvatar={profileForm.avatar_url}
+                  onUploadComplete={(url: string) => handleAvatarUpload([{ url }])}
                 />
               </div>
 

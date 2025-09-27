@@ -67,7 +67,7 @@ export default function TestMarketplacePage() {
           <div>
             <p><strong>Name:</strong> {user?.name}</p>
             <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Role:</strong> {user?.role}</p>
+            <p><strong>Role:</strong> {(user as any)?.role}</p>
           </div>
         ) : (
           <p>Not logged in</p>
@@ -136,7 +136,7 @@ export default function TestMarketplacePage() {
               <p className="font-bold">${app.price.toFixed(2)}</p>
             </CardContent>
             <CardFooter>
-              {user?.role === 'tester' ? (
+              {(user as any)?.role === 'tester' ? (
                 hasUserPurchasedApp(app.id) ? (
                   <Button disabled className="w-full">Already Purchased</Button>
                 ) : (
@@ -150,7 +150,7 @@ export default function TestMarketplacePage() {
                 )
               ) : (
                 <Button disabled className="w-full">
-                  {user?.role === 'developer' ? 'Developers Cannot Purchase' : 'Login as Tester to Purchase'}
+                  {(user as any)?.role === 'developer' ? 'Developers Cannot Purchase' : 'Login as Tester to Purchase'}
                 </Button>
               )}
             </CardFooter>

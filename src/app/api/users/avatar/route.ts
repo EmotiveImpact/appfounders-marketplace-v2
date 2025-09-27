@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
+import { neonClient } from '@/lib/database/neon-client';
 
 // Custom session type with extended user properties
 interface CustomSession {
@@ -75,13 +76,11 @@ export async function POST(req: NextRequest) {
     const fileUrl = `/uploads/avatars/${fileName}`;
     
     // Update user in database with new avatar URL
-    const updatedUser = await payload.update({
-      collection: 'users',
-      id: userId,
-      data: {
-        avatar: fileUrl,
-      },
-    });
+    const updatedUserResult = await neonClient.query(
+      'UPDATE users SET avatar = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [fileUrl, userId]
+    );
+    const updatedUser = updatedUserResult[0];
 
     return NextResponse.json({ 
       success: true,

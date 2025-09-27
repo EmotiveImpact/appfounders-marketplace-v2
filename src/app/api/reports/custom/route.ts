@@ -494,15 +494,15 @@ function processReportData(data: any[], metrics: string[], chartType: string, gr
     const summary = {};
     metrics.forEach(metric => {
       if (metric === 'sales_count') {
-        summary[metric] = data.reduce((sum, row) => sum + (row.sales_count || 0), 0);
+        (summary as any)[metric] = data.reduce((sum, row) => sum + (row.sales_count || 0), 0);
       } else if (metric === 'revenue') {
-        summary[metric] = data.reduce((sum, row) => sum + (row.revenue || 0), 0);
+        (summary as any)[metric] = data.reduce((sum, row) => sum + (row.revenue || 0), 0);
       } else if (metric === 'unique_buyers') {
-        summary[metric] = data.reduce((sum, row) => sum + (row.unique_buyers || 0), 0);
+        (summary as any)[metric] = data.reduce((sum, row) => sum + (row.unique_buyers || 0), 0);
       } else if (metric === 'avg_order_value') {
         const totalRevenue = data.reduce((sum, row) => sum + (row.revenue || 0), 0);
         const totalSales = data.reduce((sum, row) => sum + (row.sales_count || 0), 0);
-        summary[metric] = totalSales > 0 ? totalRevenue / totalSales : 0;
+        (summary as any)[metric] = totalSales > 0 ? totalRevenue / totalSales : 0;
       }
     });
     return summary;

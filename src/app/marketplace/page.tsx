@@ -448,7 +448,7 @@ export default function MarketplacePage() {
                   description={app.description}
                   price={app.price}
                   image={app.image}
-                  type={app.type}
+                  type={app.type as "IOS" | "ANDROID" | "WEB" | "MAC" | "PC"}
                   developer={app.developer}
                   rating={app.rating}
                 />

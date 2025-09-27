@@ -49,7 +49,7 @@ export default function AppFeedbackPage() {
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600">{error?.message || 'An error occurred'}</p>
           <Link href="/dashboard/tester/apps" className="mt-4 inline-block text-blue-500 hover:underline">
             Return to My Apps
           </Link>

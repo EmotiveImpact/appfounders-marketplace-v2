@@ -252,14 +252,13 @@ export function VersionManager({ appId, appName, currentVersion, userRole }: Ver
                     <div>
                       <Label>App File</Label>
                       <UploadManager
-                        onUploadComplete={(urls) => {
+                        onUploadComplete={(urls: any) => {
                           if (urls.length > 0) {
                             setNewVersion({ ...newVersion, app_file_url: urls[0] });
                           }
                         }}
-                        maxFiles={1}
-                        acceptedTypes={['application/*', '.zip', '.ipa', '.apk', '.exe', '.dmg']}
-                        uploadType="app_files"
+                        maxFiles={{ binaries: 1 }}
+
                       />
                       {newVersion.app_file_url && (
                         <p className="text-sm text-green-600 mt-2">
@@ -271,12 +270,11 @@ export function VersionManager({ appId, appName, currentVersion, userRole }: Ver
                     <div>
                       <Label>Screenshots (Optional)</Label>
                       <UploadManager
-                        onUploadComplete={(urls) => {
+                        onUploadComplete={(urls: any) => {
                           setNewVersion({ ...newVersion, screenshots: urls });
                         }}
-                        maxFiles={6}
-                        acceptedTypes={['image/*']}
-                        uploadType="screenshots"
+                        maxFiles={{ images: 6 }}
+
                       />
                       {newVersion.screenshots.length > 0 && (
                         <p className="text-sm text-green-600 mt-2">

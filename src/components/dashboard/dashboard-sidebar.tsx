@@ -27,8 +27,8 @@ export default function DashboardSidebar() {
   const [userRole, setUserRole] = useState<string | null>(null);
   
   useEffect(() => {
-    if (user?.role) {
-      setUserRole(user.role);
+    if ((user as any)?.role) {
+      setUserRole((user as any).role);
     }
   }, [user]);
   

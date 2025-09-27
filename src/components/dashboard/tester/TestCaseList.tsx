@@ -41,11 +41,11 @@ export default function TestCaseList() {
 
   useEffect(() => {
     if (session?.user) {
-      setUserId(session.user.id);
-      if (session.user.role === 'admin') {
+      setUserId((session.user as any).id);
+      if ((session.user as any).role === 'admin') {
         fetchAllTestCases();
       } else {
-        fetchTestCasesByTesterId(session.user.id);
+        fetchTestCasesByTesterId((session.user as any).id);
       }
     }
   }, [session, fetchTestCasesByTesterId, fetchAllTestCases]);

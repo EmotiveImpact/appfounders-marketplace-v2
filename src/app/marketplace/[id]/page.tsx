@@ -212,7 +212,7 @@ export default function AppDetailPage() {
                         }
                         alert(`Demo: Purchase ${app.name} for ${formatCurrency(app.price)}\n\nThis is a demo - Stripe integration is available but not configured for this demo.`);
                       }}
-                      disabled={user?.role !== 'tester' && isAuthenticated}
+                      disabled={(user as any)?.role !== 'tester' && isAuthenticated}
                       className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
                     >
                       <CreditCard className="mr-2 h-5 w-5" />

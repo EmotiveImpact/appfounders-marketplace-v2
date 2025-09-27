@@ -123,7 +123,7 @@ export const POST = createProtectedRoute(
         try {
           await sendNotification(
             user.id,
-            'welcome',
+            'welcome' as any,
             'Welcome to AppFounders!',
             `Welcome ${data.name}! Your ${user.role} profile has been set up successfully. Start exploring the platform and connect with the community.`,
             {

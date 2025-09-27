@@ -117,9 +117,9 @@ export const GET = createProtectedRoute(
 
       // Format developer-specific stats
       if (user.role === 'developer') {
-        accountInfo.average_rating_received = parseFloat(developerStats.average_rating_received || '0').toFixed(1);
-        accountInfo.reviews_received = parseInt(developerStats.reviews_received || '0');
-        accountInfo.unique_customers = parseInt(developerStats.unique_customers || '0');
+        (accountInfo as any).average_rating_received = parseFloat((developerStats as any).average_rating_received || '0').toFixed(1);
+        (accountInfo as any).reviews_received = parseInt((developerStats as any).reviews_received || '0');
+        (accountInfo as any).unique_customers = parseInt((developerStats as any).unique_customers || '0');
       }
 
       return NextResponse.json({

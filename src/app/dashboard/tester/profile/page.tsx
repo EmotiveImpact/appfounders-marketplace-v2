@@ -55,7 +55,7 @@ export default function TesterProfilePage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/signin');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);

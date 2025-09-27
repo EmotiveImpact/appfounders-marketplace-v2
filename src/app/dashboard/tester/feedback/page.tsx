@@ -57,8 +57,8 @@ export default function TesterFeedbackPage() {
     }
 
     // Check if user is tester
-    if (!authLoading && isAuthenticated && user?.role !== 'tester') {
-      router.push(`/dashboard/${user?.role || ''}`);
+    if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
+      router.push(`/dashboard/${(user as any)?.role || ''}`);
       return;
     }
 
@@ -204,7 +204,7 @@ export default function TesterFeedbackPage() {
   }, [feedback, statusFilter, categoryFilter, searchTerm]);
 
   // Get unique categories for filter
-  const categories = [...new Set(feedback.map(item => item.category))];
+  const categories = Array.from(new Set(feedback.map(item => item.category)));
 
   // Format rating with stars
   const renderRatingStars = (rating: number) => {

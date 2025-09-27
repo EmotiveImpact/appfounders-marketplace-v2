@@ -60,7 +60,7 @@ export function usePayloadAPI<T = any>(defaultOptions?: PayloadAPIOptions): UseP
         path,
         method = 'get',
         params = {},
-        requestData,
+        data: requestData,
         cacheTime,
         refreshOnSuccess = false,
       } = mergedOptions;

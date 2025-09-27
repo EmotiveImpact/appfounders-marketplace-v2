@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { processPurchase, getUserPurchases, getDeveloperSales } from '@/lib/services/payloadService';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-options';
+import { neonClient } from '@/lib/database/neon-client';
 
 // Custom session type with extended user properties
 interface CustomSession {
@@ -69,10 +70,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(sales);
     } else if ((session.user as any).role === 'admin') {
       // For admins, return all purchases
-      const allPurchases = await payload.find({
-        collection: 'purchases',
-        depth: 2,
-      });
+      const allPurchases = await neonClient.query(
+        'SELECT * FROM purchases ORDER BY created_at DESC'
+      );
       return NextResponse.json(allPurchases);
     }
     

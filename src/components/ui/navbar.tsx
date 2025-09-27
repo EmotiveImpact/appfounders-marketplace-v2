@@ -184,11 +184,11 @@ const Navbar = () => {
                       <div className="px-4 py-2 border-b">
                         <p className="text-sm font-medium text-gray-900">{user.name || 'User'}</p>
                         <p className="text-xs text-gray-500">{user.email}</p>
-                        <p className="text-xs text-gray-500 mt-1">Role: {user.role || 'User'}</p>
+                        <p className="text-xs text-gray-500 mt-1">Role: {(user as any)?.role || 'User'}</p>
                       </div>
                       
-                      <Link 
-                        href={`/dashboard/${user.role || ''}`}
+                      <Link
+                        href={`/dashboard/${(user as any)?.role || ''}`}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={closeDropdowns}
                       >

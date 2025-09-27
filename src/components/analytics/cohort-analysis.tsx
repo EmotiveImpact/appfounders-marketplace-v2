@@ -152,9 +152,9 @@ export function CohortAnalysis({ userRole, developerId, className }: CohortAnaly
           <div className="mt-6">
             <h4 className="font-medium mb-3">Average Retention Across All Cohorts</h4>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={periods.map(p => ({ 
-                period: p === 0 ? 'P0' : `P${p}`, 
-                retention: cohortData.data.average_retention[p] || 0 
+              <LineChart data={periods.map((p: any) => ({
+                period: p === 0 ? 'P0' : `P${p}`,
+                retention: cohortData.data.average_retention[p] || 0
               }))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />

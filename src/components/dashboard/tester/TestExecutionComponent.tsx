@@ -27,9 +27,9 @@ export default function TestExecutionComponent() {
     ?.filter(execution => {
       // Apply search filter
       const matchesSearch = !searchTerm || 
-        execution.testCase.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (execution as any).testCase?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         execution.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        execution.executedBy.toLowerCase().includes(searchTerm.toLowerCase());
+        (execution.executedBy as any)?.toLowerCase?.().includes(searchTerm.toLowerCase());
       
       // Apply result filter
       const matchesResult = !filterResult || execution.result === filterResult;
@@ -50,8 +50,8 @@ export default function TestExecutionComponent() {
       }
       
       // Default sort for other fields
-      const aValue = String(a[sortField] || '');
-      const bValue = String(b[sortField] || '');
+      const aValue = String((a as any)[sortField] || '');
+      const bValue = String((b as any)[sortField] || '');
       
       return sortDirection === 'asc'
         ? aValue.localeCompare(bValue)
@@ -191,16 +191,16 @@ export default function TestExecutionComponent() {
             <tbody className="divide-y divide-gray-200">
               {filteredExecutions?.map((execution) => (
                 <tr key={execution.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium">{execution.testCase.title}</td>
+                  <td className="px-4 py-3 text-sm font-medium">{(execution as any).testCase?.title || 'N/A'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getResultBadgeClass(execution.result)}`}>
                       {execution.result}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">{formatDuration(execution.duration)}</td>
-                  <td className="px-4 py-3 text-sm">{execution.executedBy}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{formatDate(execution.executedAt)}</td>
-                  <td className="px-4 py-3 text-sm">{execution.environment}</td>
+                  <td className="px-4 py-3 text-sm">{(execution.executedBy as any)?.name || 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{formatDate(execution.executedAt.toString())}</td>
+                  <td className="px-4 py-3 text-sm">{(execution.environment as any)?.platform || 'N/A'}</td>
                 </tr>
               ))}
             </tbody>

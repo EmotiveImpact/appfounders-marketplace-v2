@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 const createTransporter = () => {
   if (process.env.SENDGRID_API_KEY) {
     // SendGrid configuration
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       service: 'SendGrid',
       auth: {
         user: 'apikey',
@@ -13,7 +13,7 @@ const createTransporter = () => {
     });
   } else if (process.env.SMTP_HOST) {
     // SMTP configuration
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
@@ -24,7 +24,7 @@ const createTransporter = () => {
     });
   } else {
     // Development mode - log emails to console
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       streamTransport: true,
       newline: 'unix',
       buffer: true,
@@ -51,7 +51,7 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
       text: options.text,
     };
 
-    const result = await transporter.sendMail(mailOptions);
+    const result = await (transporter as any).sendMail(mailOptions);
     
     if (process.env.NODE_ENV === 'development') {
       console.log('Email sent (development mode):', {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/database/neon-client';
+import { neonClient } from '@/lib/database/neon-client';
 import { validateApiKey, rateLimitCheck } from '@/lib/api/middleware';
 import { z } from 'zod';
 
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
     queryParams_db.push(limit, offset);
 
     // Execute query
-    const result = await db.query(query, queryParams_db);
+    const result = await neonClient.query(query, queryParams_db);
 
     // Get total count for pagination
     let countQuery = `
@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
       countParams.push(min_rating);
     }
 
-    const countResult = await db.query(countQuery, countParams);
+    const countResult = await neonClient.query(countQuery, countParams);
     const total = parseInt(countResult[0].total);
 
     // Format response
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createAppSchema.parse(body);
 
     // Create app in database
-    const result = await db.query(`
+    const result = await neonClient.query(`
       INSERT INTO apps (
         name, description, short_description, category, platforms,
         price, original_price, features, requirements, tags,

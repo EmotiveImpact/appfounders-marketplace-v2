@@ -8,7 +8,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 // Client-side Stripe instance
-let stripePromise: Promise<Stripe | null>;
+let stripePromise: any;
 
 export const getStripe = () => {
   if (!stripePromise) {

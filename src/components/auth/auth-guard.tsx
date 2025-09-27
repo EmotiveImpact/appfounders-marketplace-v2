@@ -29,9 +29,9 @@ export function AuthGuard({
       if (!isAuthenticated) {
         // Not authenticated, redirect to sign-in
         router.push(fallbackUrl);
-      } else if (requiredRole && user?.role !== requiredRole) {
+      } else if (requiredRole && (user as any)?.role !== requiredRole) {
         // Authenticated but wrong role, redirect to dashboard
-        router.push(`/dashboard/${user?.role || ''}`);
+        router.push(`/dashboard/${(user as any)?.role || ''}`);
       }
     }
   }, [isAuthenticated, isLoading, requiredRole, router, user, fallbackUrl]);
@@ -49,7 +49,7 @@ export function AuthGuard({
   }
 
   // If authenticated and has correct role, render children
-  if (isAuthenticated && (!requiredRole || user?.role === requiredRole)) {
+  if (isAuthenticated && (!requiredRole || (user as any)?.role === requiredRole)) {
     return <>{children}</>;
   }
 

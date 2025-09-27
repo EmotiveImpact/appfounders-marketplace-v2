@@ -20,7 +20,7 @@ export default function SubmitAppPage() {
     appIcon: null,
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -28,7 +28,7 @@ export default function SubmitAppPage() {
     }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: any) => {
     const { name, files } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -36,7 +36,7 @@ export default function SubmitAppPage() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
 

@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case 'account.application.deauthorized':
-        await handleAccountDeauthorized(event.data.object as Stripe.Account);
+        await handleAccountDeauthorized(event.data.object as unknown as Stripe.Account);
         break;
 
       case 'transfer.created':
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
         await handleTransferUpdated(event.data.object as Stripe.Transfer);
         break;
 
-      case 'transfer.failed':
+      case 'transfer.failed' as any:
         await handleTransferFailed(event.data.object as Stripe.Transfer);
         break;
 

@@ -10,14 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import {
-  validateFiles,
-  FileValidationConfig,
+  validateFile,
   formatFileSize,
-  getFileIcon,
-  isImageFile,
-  createImagePreview,
-  generateUniqueFileName,
-  FILE_CONFIGS
+  generateUniqueFileName
 } from '@/lib/upload/validation';
 
 interface FileUploadProps {

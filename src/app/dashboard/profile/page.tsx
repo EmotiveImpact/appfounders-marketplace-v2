@@ -36,17 +36,17 @@ export default function ProfilePage() {
     if (user) {
       setFormData({
         name: user.name || '',
-        bio: user.bio || '',
+        bio: (user as any).bio || '',
       });
       
-      if (user.avatar) {
+      if ((user as any).avatar) {
         // If avatar is an object with url property
-        if (typeof user.avatar === 'object' && user.avatar.url) {
-          setAvatarPreview(user.avatar.url);
-        } 
+        if (typeof (user as any).avatar === 'object' && (user as any).avatar.url) {
+          setAvatarPreview((user as any).avatar.url);
+        }
         // If avatar is a string (URL)
-        else if (typeof user.avatar === 'string') {
-          setAvatarPreview(user.avatar);
+        else if (typeof (user as any).avatar === 'string') {
+          setAvatarPreview((user as any).avatar);
         }
       }
     }
@@ -87,7 +87,7 @@ export default function ProfilePage() {
     
     try {
       // Upload avatar if changed
-      let avatarUrl = user?.avatar_url;
+      let avatarUrl = (user as any)?.avatar_url;
       if (avatarFile) {
         const formData = new FormData();
         formData.append('file', avatarFile);

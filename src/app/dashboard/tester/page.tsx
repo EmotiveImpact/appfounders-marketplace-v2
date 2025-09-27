@@ -24,7 +24,7 @@ export default function TesterDashboard() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/sign-in');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -37,7 +37,7 @@ export default function TesterDashboard() {
   }, [isAuthenticated, user, fetchPurchases, purchases, purchasesLoading]);
   
   // Filter purchases based on search query
-  const filteredPurchases = purchases?.docs?.filter(purchase => 
+  const filteredPurchases = purchases?.docs?.filter((purchase: any) =>
     purchase.app?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
   
@@ -202,7 +202,7 @@ export default function TesterDashboard() {
             {/* Grid view */}
             {viewMode === 'grid' && filteredPurchases.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPurchases.map((purchase) => (
+                {filteredPurchases.map((purchase: any) => (
                   <div key={purchase.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     <div className="relative h-40 bg-gray-200 dark:bg-gray-700">
                       <Image
@@ -254,7 +254,7 @@ export default function TesterDashboard() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                    {filteredPurchases.map((purchase) => (
+                    {filteredPurchases.map((purchase: any) => (
                       <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">

@@ -1,7 +1,7 @@
 import { BlogPost } from '../types/blog';
 
 // Mock blog data
-const mockBlogs: BlogPost[] = [
+const mockBlogs: any[] = [
   {
     id: '1',
     title: 'Getting Started with App Development',

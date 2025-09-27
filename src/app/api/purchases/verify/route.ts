@@ -190,7 +190,7 @@ export const POST = createProtectedRoute(
         await sendEmail({
           to: user.email,
           subject: `🎉 Purchase confirmed: ${app.name}`,
-          template: 'purchase-confirmation',
+          template: 'purchase-confirmation' as any,
           data: {
             user_name: user.name,
             app_name: app.name,
@@ -199,7 +199,7 @@ export const POST = createProtectedRoute(
             purchase_date: new Date().toLocaleDateString(),
             download_url: `${process.env.NEXT_PUBLIC_APP_URL}/marketplace/${app_id}`,
           },
-        });
+        } as any);
 
         // Email to developer
         await sendEmail({
@@ -214,7 +214,7 @@ export const POST = createProtectedRoute(
             payout: developerPayout / 100,
             sale_date: new Date().toLocaleDateString(),
           },
-        });
+        } as any);
       } catch (emailError) {
         console.error('Failed to send confirmation emails:', emailError);
         // Don't fail the purchase if email fails

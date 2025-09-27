@@ -21,23 +21,23 @@ export async function createEmailVerificationToken(userId: string): Promise<stri
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
 
   // Store token in database
-  await db.sql`
+  await (db as any).query(`
     INSERT INTO email_verification_tokens (user_id, token, expires_at)
-    VALUES (${userId}, ${token}, ${expiresAt.toISOString()})
-  `;
+    VALUES ($1, $2, $3)
+  `, [userId, token, expiresAt.toISOString()]);
 
   return token;
 }
 
 // Verify email verification token
 export async function verifyEmailVerificationToken(token: string): Promise<{ valid: boolean; user_id?: string }> {
-  const result = await db.sql`
+  const result = await (db as any).query(`
     SELECT user_id, expires_at, used
     FROM email_verification_tokens
-    WHERE token = ${token}
+    WHERE token = $1
     ORDER BY created_at DESC
     LIMIT 1
-  `;
+  `, [token]);
 
   if (result.length === 0) {
     return { valid: false };
@@ -65,18 +65,18 @@ export async function verifyUserEmail(token: string): Promise<{ success: boolean
 
   try {
     // Update user email_verified status
-    await db.sql`
-      UPDATE users 
+    await (db as any).query(`
+      UPDATE users
       SET email_verified = true, updated_at = NOW()
-      WHERE id = ${tokenVerification.user_id}
-    `;
+      WHERE id = $1
+    `, [tokenVerification.user_id]);
 
     // Mark token as used
-    await db.sql`
-      UPDATE email_verification_tokens 
+    await (db as any).query(`
+      UPDATE email_verification_tokens
       SET used = true, updated_at = NOW()
-      WHERE token = ${token}
-    `;
+      WHERE token = $1
+    `, [token]);
 
     return { success: true };
   } catch (error) {
@@ -89,11 +89,11 @@ export async function verifyUserEmail(token: string): Promise<{ success: boolean
 export async function resendVerificationEmail(userId: string): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
     // Check if user exists and is not already verified
-    const userResult = await db.sql`
+    const userResult = await (db as any).query(`
       SELECT id, email, email_verified
       FROM users
-      WHERE id = ${userId}
-    `;
+      WHERE id = $1
+    `, [userId]);
 
     if (userResult.length === 0) {
       return { success: false, error: 'User not found' };
@@ -120,10 +120,10 @@ export async function resendVerificationEmail(userId: string): Promise<{ success
 // Clean up expired tokens (should be run periodically)
 export async function cleanupExpiredVerificationTokens(): Promise<void> {
   const now = new Date();
-  await db.sql`
+  await (db as any).query(`
     DELETE FROM email_verification_tokens
-    WHERE expires_at < ${now.toISOString()} OR used = true
-  `;
+    WHERE expires_at < $1 OR used = true
+  `, [now.toISOString()]);
 }
 
 // Send verification email (placeholder for email service integration)
@@ -154,11 +154,11 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 
 // Check if user email is verified
 export async function isEmailVerified(userId: string): Promise<boolean> {
-  const result = await db.sql`
+  const result = await (db as any).query(`
     SELECT email_verified
     FROM users
-    WHERE id = ${userId}
-  `;
+    WHERE id = $1
+  `, [userId]);
 
   return result.length > 0 ? result[0].email_verified : false;
 }

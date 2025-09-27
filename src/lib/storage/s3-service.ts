@@ -60,7 +60,7 @@ export async function uploadFile(
     };
 
     // Upload file
-    const command = new PutObjectCommand(uploadParams);
+    const command = new PutObjectCommand(uploadParams as any);
     await s3Client.send(command);
 
     // Return file info
@@ -97,7 +97,7 @@ export async function getPresignedUploadUrl(
     };
 
     // Generate presigned URL
-    const command = new PutObjectCommand(uploadParams);
+    const command = new PutObjectCommand(uploadParams as any);
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn });
 
     return {

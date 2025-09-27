@@ -48,8 +48,8 @@ export async function validateApiKey(
     const hashedKey = createHash('sha256').update(apiKey).digest('hex');
 
     // Look up API key in database
-    const result = await db.query(`
-      SELECT 
+    const result = await (db as any).query(`
+      SELECT
         ak.id,
         ak.name,
         ak.permissions,
@@ -77,8 +77,8 @@ export async function validateApiKey(
     }
 
     // Update last used timestamp
-    await db.query(`
-      UPDATE api_keys 
+    await (db as any).query(`
+      UPDATE api_keys
       SET last_used_at = NOW(), usage_count = usage_count + 1
       WHERE id = $1
     `, [keyData.id]);
@@ -123,11 +123,11 @@ export async function rateLimitCheck(
   const windowStart = now - (windowSeconds * 1000);
 
   // Clean up expired entries
-  for (const [k, v] of rateLimitStore.entries()) {
+  Array.from(rateLimitStore.entries()).forEach(([k, v]) => {
     if (v.resetTime < now) {
       rateLimitStore.delete(k);
     }
-  }
+  });
 
   // Get current count
   const current = rateLimitStore.get(key);
@@ -209,7 +209,7 @@ export async function logApiRequest(
   try {
     const url = new URL(request.url);
     
-    await db.query(`
+    await (db as any).query(`
       INSERT INTO api_logs (
         method,
         path,

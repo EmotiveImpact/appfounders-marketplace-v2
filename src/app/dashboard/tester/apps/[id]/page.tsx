@@ -36,7 +36,7 @@ export default function TesterAppDetailPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/sign-in');
-    } else if (!authLoading && isAuthenticated && user?.role !== 'tester') {
+    } else if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
       router.push('/dashboard');
     }
   }, [authLoading, isAuthenticated, user, router]);

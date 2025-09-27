@@ -64,7 +64,7 @@ export async function sendNotification(
       if (userResult.length > 0) {
         const user = userResult[0];
         const emailSent = await sendTemplatedEmail(
-          notificationType,
+          notificationType as any,
           user.email,
           { ...emailData, userName: user.name }
         );

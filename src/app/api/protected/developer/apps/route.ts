@@ -58,21 +58,15 @@ export const POST = createProtectedRoute(
       }
 
       // Create app
-      const newApp = await db.createApp({
-        name,
-        description,
-        category,
-        price: parseFloat(price),
-        developer_id: user.id,
-        images: images || [],
-        features: features || [],
-        requirements: requirements || {},
-        status: 'pending',
-      });
+      const newApp = await neonClient.query(
+        `INSERT INTO apps (name, description, category, price, developer_id, images, features, requirements, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        [name, description, category, parseFloat(price), user.id, JSON.stringify(images || []), JSON.stringify(features || []), JSON.stringify(requirements || {}), 'pending']
+      );
 
       return NextResponse.json({
         success: true,
-        app: newApp,
+        app: newApp[0],
       });
     } catch (error: any) {
       console.error('Error creating app:', error);

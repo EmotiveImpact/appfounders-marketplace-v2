@@ -84,13 +84,13 @@ export function validateFileType(file: File, category: string): boolean {
     case FILE_CATEGORIES.APP_SCREENSHOTS:
     case FILE_CATEGORIES.APP_ICONS:
     case FILE_CATEGORIES.USER_AVATARS:
-      return S3_CONFIG.allowedImageTypes.includes(type);
+      return S3_CONFIG.allowedImageTypes.includes(type as any);
     
     case FILE_CATEGORIES.DOCUMENTS:
-      return S3_CONFIG.allowedDocumentTypes.includes(type);
+      return S3_CONFIG.allowedDocumentTypes.includes(type as any);
     
     case FILE_CATEGORIES.VIDEOS:
-      return S3_CONFIG.allowedVideoTypes.includes(type);
+      return S3_CONFIG.allowedVideoTypes.includes(type as any);
     
     case FILE_CATEGORIES.APP_BINARIES:
       // Allow common binary types

@@ -60,7 +60,7 @@ const DEFAULT_MAX_FILES = {
 
 export function UploadManager({
   onUploadComplete,
-  showTabs = DEFAULT_TABS,
+  showTabs = DEFAULT_TABS as any,
   maxFiles = DEFAULT_MAX_FILES,
   className = '',
 }: UploadManagerProps) {
@@ -75,7 +75,7 @@ export function UploadManager({
       if (category === 'appIcon') {
         updated.appIcon = files[0];
       } else {
-        updated[category as keyof UploadResults] = files;
+        (updated as any)[category] = files;
       }
       
       onUploadComplete?.(updated);
@@ -96,7 +96,7 @@ export function UploadManager({
       } else {
         const categoryFiles = updated[category as keyof UploadResults] as UploadedFile[];
         if (categoryFiles && typeof index === 'number') {
-          updated[category as keyof UploadResults] = categoryFiles.filter((_, i) => i !== index);
+          (updated as any)[category] = categoryFiles.filter((_, i) => i !== index);
         }
       }
       
@@ -220,7 +220,7 @@ export function UploadManager({
       </div>
 
       {/* Upload Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab as any}>
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
           {showTabs.map((tab) => (
             <TabsTrigger key={tab} value={tab} className="text-xs">

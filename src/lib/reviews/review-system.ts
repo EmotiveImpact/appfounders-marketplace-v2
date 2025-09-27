@@ -113,7 +113,7 @@ export async function createReview(
       const app = appResult[0];
       await sendNotification(
         app.developer_id,
-        'new_review',
+        'new_review' as any,
         'New Review Received',
         `Your app "${app.name}" received a ${rating}-star review.`,
         { app_id: appId, review_id: review.id, rating }
@@ -454,7 +454,7 @@ export async function addDeveloperResponse(
       if (reviewResult.length > 0) {
         await sendNotification(
           reviewResult[0].user_id,
-          'developer_response',
+          'developer_response' as any,
           'Developer Responded to Your Review',
           'The developer has responded to your review.',
           { review_id: reviewId, response_id: response.id }

@@ -25,7 +25,7 @@ import {
   Settings,
   Mail,
   Clock,
-  DragHandleDots2Icon as Grip
+  GripVertical as Grip
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';

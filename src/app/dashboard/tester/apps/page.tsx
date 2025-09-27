@@ -22,8 +22,8 @@ export default function TesterAppsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
-  const [apps, setApps] = useState([]);
-  const [filteredApps, setFilteredApps] = useState([]);
+  const [apps, setApps] = useState<any[]>([]);
+  const [filteredApps, setFilteredApps] = useState<any[]>([]);
 
   useEffect(() => {
     // Check authentication
@@ -33,8 +33,8 @@ export default function TesterAppsPage() {
     }
 
     // Check if user is tester
-    if (!authLoading && isAuthenticated && user?.role !== 'tester') {
-      router.push(`/dashboard/${user?.role || ''}`);
+    if (!authLoading && isAuthenticated && (user as any)?.role !== 'tester') {
+      router.push(`/dashboard/${(user as any)?.role || ''}`);
       return;
     }
 
@@ -178,7 +178,7 @@ export default function TesterAppsPage() {
   }, [apps, categoryFilter, priceFilter, searchTerm]);
 
   // Get unique categories for filter
-  const categories = [...new Set(apps.map((app: any) => app.category))];
+  const categories = Array.from(new Set(apps.map((app: any) => app.category)));
 
   // Format price
   const formatPrice = (price: number) => {

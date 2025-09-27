@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/database/neon-client';
+import { neonClient } from '@/lib/database/neon-client';
 import { createHash, randomBytes } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { z } from 'zod';
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     const { response_type, client_id, redirect_uri, scope, state } = validatedParams;
 
     // Validate client
-    const clientResult = await db.query(`
+    const clientResult = await neonClient.query(`
       SELECT id, name, redirect_uris, allowed_scopes
       FROM oauth_clients
       WHERE client_id = $1 AND is_active = true
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
       // Store authorization code
-      await db.query(`
+      await neonClient.query(`
         INSERT INTO oauth_authorization_codes (
           code, client_id, user_id, redirect_uri, scope, expires_at, created_at
         ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
 
     // Validate client credentials
     const clientHash = createHash('sha256').update(client_secret).digest('hex');
-    const clientResult = await db.query(`
+    const clientResult = await neonClient.query(`
       SELECT id, name, allowed_scopes
       FROM oauth_clients
       WHERE client_id = $1 AND client_secret_hash = $2 AND is_active = true
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate authorization code
-      const codeResult = await db.query(`
+      const codeResult = await neonClient.query(`
         SELECT user_id, scope, expires_at
         FROM oauth_authorization_codes
         WHERE code = $1 AND client_id = $2 AND redirect_uri = $3 AND used = false
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Mark code as used
-      await db.query(`
+      await neonClient.query(`
         UPDATE oauth_authorization_codes
         SET used = true, used_at = NOW()
         WHERE code = $1
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
       const refreshTokenValue = generateRefreshToken();
 
       // Store refresh token
-      await db.query(`
+      await neonClient.query(`
         INSERT INTO oauth_refresh_tokens (
           token, client_id, user_id, scope, expires_at, created_at
         ) VALUES ($1, $2, $3, $4, $5, NOW())
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate refresh token
-      const tokenResult = await db.query(`
+      const tokenResult = await neonClient.query(`
         SELECT user_id, scope, expires_at
         FROM oauth_refresh_tokens
         WHERE token = $1 AND client_id = $2 AND revoked = false

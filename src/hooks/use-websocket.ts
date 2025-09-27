@@ -46,7 +46,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   }, []);
 
   const connect = useCallback(async () => {
-    if (!session?.accessToken || socketRef.current?.connected) {
+    if (!(session as any)?.accessToken || socketRef.current?.connected) {
       return;
     }
 
@@ -56,7 +56,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       const socket = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
         path: '/api/socket',
         auth: {
-          token: session.accessToken,
+          token: (session as any).accessToken,
         },
         transports: ['websocket', 'polling'],
         timeout: 10000,
@@ -75,7 +75,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         });
 
         // Subscribe to analytics if user has appropriate role
-        if (session.user?.role === 'admin' || session.user?.role === 'developer') {
+        if ((session as any)?.user?.role === 'admin' || (session as any)?.user?.role === 'developer') {
           socket.emit('subscribe:analytics');
         }
       });
@@ -212,7 +212,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   // Auto-connect when session is available
   useEffect(() => {
-    if (autoConnect && session?.accessToken && !socketRef.current) {
+    if (autoConnect && (session as any)?.accessToken && !socketRef.current) {
       connect();
     }
 

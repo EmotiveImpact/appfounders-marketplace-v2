@@ -60,7 +60,7 @@ export default function TestAppDetailPage({ params }: AppDetailPageProps) {
           <div>
             <p><strong>Name:</strong> {user?.name}</p>
             <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Role:</strong> {user?.role}</p>
+            <p><strong>Role:</strong> {(user as any)?.role}</p>
           </div>
         ) : (
           <p>Not logged in</p>
@@ -135,7 +135,7 @@ export default function TestAppDetailPage({ params }: AppDetailPageProps) {
           </CardContent>
           
           <CardFooter>
-            {user?.role === 'tester' ? (
+            {(user as any)?.role === 'tester' ? (
               hasUserPurchasedApp ? (
                 <div className="w-full">
                   <Button disabled className="w-full mb-2">Already Purchased</Button>
@@ -154,7 +154,7 @@ export default function TestAppDetailPage({ params }: AppDetailPageProps) {
               )
             ) : (
               <Button disabled className="w-full">
-                {user?.role === 'developer' ? 'Developers Cannot Purchase' : 'Login as Tester to Purchase'}
+                {(user as any)?.role === 'developer' ? 'Developers Cannot Purchase' : 'Login as Tester to Purchase'}
               </Button>
             )}
           </CardFooter>

@@ -13,12 +13,12 @@ export default function Dashboard() {
 
   // Redirect based on user role
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user?.role) {
-      console.log('User role detected:', user.role);
+    if (!isLoading && isAuthenticated && (user as any)?.role) {
+      console.log('User role detected:', (user as any).role);
       setRedirecting(true);
       
       // Redirect to role-specific dashboard
-      const redirectPath = `/dashboard/${user.role}`;
+      const redirectPath = `/dashboard/${(user as any).role}`;
       router.push(redirectPath);
     } else if (!isLoading && !isAuthenticated) {
       router.push('/signin');
@@ -75,14 +75,14 @@ export default function Dashboard() {
               Welcome, <span className="font-semibold">{user.name}</span>!
             </p>
             <p className="text-indigo-600 text-sm mt-1">
-              You are signed in as: {user.email} (Role: {user.role})
+              You are signed in as: {user.email} (Role: {(user as any).role})
             </p>
           </div>
 
           <div className="text-center py-8">
             <p className="text-lg mb-4">Redirecting you to your role-specific dashboard...</p>
             <div className="flex justify-center gap-4">
-              {user.role === 'developer' && (
+              {(user as any).role === 'developer' && (
                 <Link
                   href="/dashboard/developer"
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -91,7 +91,7 @@ export default function Dashboard() {
                 </Link>
               )}
               
-              {user.role === 'tester' && (
+              {(user as any).role === 'tester' && (
                 <Link
                   href="/dashboard/tester"
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -100,7 +100,7 @@ export default function Dashboard() {
                 </Link>
               )}
               
-              {user.role === 'admin' && (
+              {(user as any).role === 'admin' && (
                 <Link
                   href="/dashboard/admin"
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
