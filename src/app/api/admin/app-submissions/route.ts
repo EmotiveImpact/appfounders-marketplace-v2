@@ -71,7 +71,7 @@ export const GET = createProtectedRoute(
 
       params.push(limit, offset);
 
-      const submissions = await neonClient.sql(submissionsQuery, params);
+      const submissions = await neonClient.query(submissionsQuery, params);
 
       // Get total count
       const countQuery = `
@@ -80,7 +80,7 @@ export const GET = createProtectedRoute(
         ${whereClause}
       `;
 
-      const countResult = await neonClient.sql(countQuery, params.slice(0, -2)); // Remove limit and offset
+      const countResult = await neonClient.query(countQuery, params.slice(0, -2)); // Remove limit and offset
       const total = parseInt(countResult[0]?.total || '0');
 
       // Get status counts
@@ -92,7 +92,7 @@ export const GET = createProtectedRoute(
         GROUP BY status
       `;
 
-      const statusCounts = await neonClient.sql(statusCountsQuery);
+      const statusCounts = await neonClient.query(statusCountsQuery);
 
       return NextResponse.json({
         success: true,
